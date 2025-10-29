@@ -296,11 +296,14 @@ async function saveToDatabase(responses, totalScore, domainScores) {
         
         if (result.status === 'success') {
             console.log('Assessment saved successfully! ID:', result.assessment_id);
+            showCustomMessageBox('Assessment saved to database successfully!');
         } else {
             console.error('Failed to save assessment:', result.message);
+            showCustomMessageBox('Failed to save assessment: ' + result.message);
         }
     } catch (error) {
         console.log('Python backend not running. Assessment not saved to database.');
+        // Don't show error message to user - silent fail if Python not running
     }
 }
 
@@ -406,20 +409,31 @@ function downloadPdf() {
  * Shows a custom message box instead of the native alert.
  */
 function showCustomMessageBox(message) {
+    // Remove existing message box if any
+    const existingOverlay = document.querySelector('.message-overlay');
+    if (existingOverlay) {
+        document.body.removeChild(existingOverlay);
+    }
+
     const overlay = document.createElement('div');
+    overlay.className = 'message-overlay';
     overlay.style.cssText = `position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center; z-index: 1000;`;
+    
     const messageBox = document.createElement('div');
     messageBox.style.cssText = `background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); text-align: center; max-width: 90%; width: 400px; font-family: 'Inter', sans-serif; color: #333; position: relative; border-top: 5px solid #3b82f6;`;
+    
     const messageText = document.createElement('p');
     messageText.textContent = message;
     messageText.style.cssText = `font-size: 1.1em; line-height: 1.5; margin-bottom: 20px;`;
     messageBox.appendChild(messageText);
+    
     const closeButton = document.createElement('button');
     closeButton.textContent = 'OK';
     closeButton.style.cssText = `padding: 10px 25px; font-size: 1em; background-color: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; transition: background-color 0.2s ease;`;
     closeButton.onmouseover = () => closeButton.style.backgroundColor = '#2563eb';
     closeButton.onmouseout = () => closeButton.style.backgroundColor = '#3b82f6';
     closeButton.onclick = () => document.body.removeChild(overlay);
+    
     messageBox.appendChild(closeButton);
     overlay.appendChild(messageBox);
     document.body.appendChild(overlay);
