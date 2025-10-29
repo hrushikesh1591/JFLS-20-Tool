@@ -1,69 +1,186 @@
-// Define the domains and their respective questions in English and Gujarati
+// Define the domains and their respective questions in English, Hindi, and Gujarati
 const domains = {
     "Mastication": [
-        ["Chewing tough food", "કઠિન ખોરાક (જેમ કે મટન) ચાવવામાં કેટલી મુશ્કેલી થાય છે?"],
-        ["Chewing hard items (like raw vegetables)", "કાચા શાકભાજી જેવા કઠિન વસ્તુઓ ચાવવામાં કેટલી મુશ્કેલી થાય છે?"],
-        ["Chewing chicken or cooked meat", "સામાન્ય રીતે બનાવેલું ચિકન કે મટન ચાવવામાં કેટલી મુશ્કેલી છે?"],
-        ["Chewing crispy foods (crackers/toast)", "ક્રિસ્પી વસ્તુઓ (જેમ કે ખાખરા કે ટોસ્ટ) ચાવવામાં કેટલી મુશ્કેલી છે?"],
-        ["Chewing soft food (like rice or dal)", "નરમ ખોરાક (જેમ કે રાંધેલું ભાત કે દાળ) ચાવવામાં કેટલી મુશ્કેલી છે?"],
-        ["Eating mashed or pureed food", "ખીર-મસhed જેવી ચાવવાની જરૂર ન હોય તેવા ખોરાકમાં કેટલી મુશ્કેલી છે?"],
-        ["Opening mouth wide enough to bite", "કંઈક બાઇટ લેવા મોઢું પૂરતું ખોલવામાં કેટલી મુશ્કેલી થાય છે?"],
-        ["Eating sandwich or burger", "સેન્ડવિચ કે બર્ગર ખાવામાં કેટલી મુશ્કેલી છે?"],
-        ["Biting an apple or similar fruit", "સફરજન જેવા ફળ ચાવવામાં કેટલી મુશ્કેલી છે?"],
-        ["Eating dry food like toast or khakhra", "સૂકા ખોરાક (ટોસ્ટ કે ખાખરા) ખાવામાં કેટલી મુશ્કેલી છે?"]
+        {
+            en: "Chewing tough food",
+            hi: "सख्त भोजन चबाना",
+            gu: "કઠિન ખોરાક (જેમ કે મટન) ચાવવામાં કેટલી મુશ્કેલી થાય છે?"
+        },
+        {
+            en: "Chewing hard items (like raw vegetables)",
+            hi: "कठोर चीजें चबाना (जैसे कच्ची सब्जियां)",
+            gu: "કાચા શાકભાજી જેવા કઠિન વસ્તુઓ ચાવવામાં કેટલી મુશ્કેલી થાય છે?"
+        },
+        {
+            en: "Chewing chicken or cooked meat",
+            hi: "चिकन या पका हुआ मांस चबाना",
+            gu: "સામાન્ય રીતે બનાવેલું ચિકન કે મટન ચાવવામાં કેટલી મુશ્કેલી છે?"
+        },
+        {
+            en: "Chewing crispy foods (crackers/toast)",
+            hi: "कुरकुरे खाद्य पदार्थ चबाना (क्रैकर्स/टोस्ट)",
+            gu: "ક્રિસ્પી વસ્તુઓ (જેમ કે ખાખરા કે ટોસ્ટ) ચાવવામાં કેટલી મુશ્કેલી છે?"
+        },
+        {
+            en: "Chewing soft food (like rice or dal)",
+            hi: "नरम भोजन चबाना (जैसे चावल या दाल)",
+            gu: "નરમ ખોરાક (જેમ કે રાંધેલું ભાત કે દાળ) ચાવવામાં કેટલી મુશ્કેલી છે?"
+        },
+        {
+            en: "Eating mashed or pureed food",
+            hi: "मैश किया हुआ या प्यूरी भोजन खाना",
+            gu: "ખીર-મસhed જેવી ચાવવાની જરૂર ન હોય તેવા ખોરાકમાં કેટલી મુશ્કેલી છે?"
+        },
+        {
+            en: "Opening mouth wide enough to bite",
+            hi: "काटने के लिए मुंह काफी चौड़ा खोलना",
+            gu: "કંઈક બાઇટ લેવા મોઢું પૂરતું ખોલવામાં કેટલી મુશ્કેલી થાય છે?"
+        },
+        {
+            en: "Eating sandwich or burger",
+            hi: "सैंडविच या बर्गर खाना",
+            gu: "સેન્ડવિચ કે બર્ગર ખાવામાં કેટલી મુશ્કેલી છે?"
+        },
+        {
+            en: "Biting an apple or similar fruit",
+            hi: "सेब या इसी तरह के फल को काटना",
+            gu: "સફરજન જેવા ફળ ચાવવામાં કેટલી મુશ્કેલી છે?"
+        },
+        {
+            en: "Eating dry food like toast or khakhra",
+            hi: "टोस्ट या खाखरा जैसा सूखा भोजन खाना",
+            gu: "સૂકા ખોરાક (ટોસ્ટ કે ખાખરા) ખાવામાં કેટલી મુશ્કેલી છે?"
+        }
     ],
     "Jaw Mobility": [
-        ["Opening mouth wide", "મોઢું પહોળું ખોલવામાં કેટલી મુશ્કેલી થાય છે?"],
-        ["Yawning", "જમ્હાઈ લેતા દુખાવો થાય છે કે અવરોધ થાય છે?"],
-        ["Smiling", "પૂરતું હસવામાં કેટલી મુશ્કેલી થાય છે?"],
-        ["Pain while using a straw to sip beverages", "સ્ટ્રોનો ઉપયોગ કરીને પીણાં પીતી વખતે દુખાવો થાય છે?"],
-        ["Speaking loudly", "મોટેથી બોલવામાં કેટલી મુશ્કેલી થાય છે?"]
+        {
+            en: "Opening mouth wide",
+            hi: "मुंह चौड़ा खोलना",
+            gu: "મોઢું પહોળું ખોલવામાં કેટલી મુશ્કેલી થાય છે?"
+        },
+        {
+            en: "Yawning",
+            hi: "जम्हाई लेना",
+            gu: "જમ્હાઈ લેતા દુખાવો થાય છે કે અવરોધ થાય છે?"
+        },
+        {
+            en: "Smiling",
+            hi: "मुस्कुराना",
+            gu: "પૂરતું હસવામાં કેટલી મુશ્કેલી થાય છે?"
+        },
+        {
+            en: "Pain while using a straw to sip beverages",
+            hi: "पेय पदार्थ पीने के लिए स्ट्रॉ का उपयोग करते समय दर्द",
+            gu: "સ્ટ્રોનો ઉપયોગ કરીને પીણાં પીતી વખતે દુખાવો થાય છે?"
+        },
+        {
+            en: "Speaking loudly",
+            hi: "जोर से बोलना",
+            gu: "મોટેથી બોલવામાં કેટલી મુશ્કેલી થાય છે?"
+        }
     ],
     "Verbal/Emotional Expression": [
-        ["Talking for a long time", "લાંબા સમય સુધી વાત કરવી મુશ્કેલ લાગે છે?"],
-        ["Laughing", "હસવાથી ચહેરામાં દુખાવો થાય છે?"],
-        ["Singing or raising voice", "ગીત ગાવા કે મોટેથી બોલવામાં કેટલી મુશ્keli થાય છે?"],
-        ["Expressing emotions like anger or joy", "ગુસ્સો કે આનંદ જેવી ભાવનાઓ ચહેરા પર બતાવવામાં કેટલી મુશ્કેલી હોય છે?"],
-        ["Facial movement while talking", "વાત કરતી વખતે ચહેરાના હલનચલનમાં કેટલી મુશ્કેલી હોય છે?"]
+        {
+            en: "Talking for a long time",
+            hi: "लंबे समय तक बात करना",
+            gu: "લાંબા સમય સુધી વાત કરવી મુશ્કેલ લાગે છે?"
+        },
+        {
+            en: "Laughing",
+            hi: "हंसना",
+            gu: "હસવાથી ચહેરામાં દુખાવો થાય છે?"
+        },
+        {
+            en: "Singing or raising voice",
+            hi: "गाना गाना या आवाज उठाना",
+            gu: "ગીત ગાવા કે મોટેથી બોલવામાં કેટલી મુશ્keli થાય છે?"
+        },
+        {
+            en: "Expressing emotions like anger or joy",
+            hi: "क्रोध या खुशी जैसी भावनाओं को व्यक्त करना",
+            gu: "ગુસ્સો કે આનંદ જેવી ભાવનાઓ ચહેરા પર બતાવવામાં કેટલી મુશ્કેલી હોય છે?"
+        },
+        {
+            en: "Facial movement while talking",
+            hi: "बात करते समय चेहरे का हिलना-डुलना",
+            gu: "વાત કરતી વખતે ચહેરાના હલનચલનમાં કેટલી મુશ્કેલી હોય છે?"
+        }
     ]
 };
 
 const formContainer = document.getElementById("formContainer");
-let questionIndex = 0; // Initialize a counter for question IDs
+let questionIndex = 0;
+let currentLanguage = 'en'; // Default language
 
-// Loop through each domain and its questions to dynamically generate the form
-for (const [domain, questions] of Object.entries(domains)) {
-    const domainDiv = document.createElement("div");
-    domainDiv.innerHTML = `<h2 class="text-xl font-bold text-blue-700 border-b-2 border-blue-200 pb-2 mb-4">${domain}</h2>`;
-
-    questions.forEach(([qEn, qGu]) => {
-        const qDiv = document.createElement("div");
-        qDiv.className = "question py-3";
-        qDiv.innerHTML = `<label class='question-label block text-md font-medium text-gray-800'>${qEn}<br><span class='text-gray-600 font-normal'>${qGu}</span></label>`;
-        const sliderContainer = document.createElement('div');
-        sliderContainer.className = 'slider-container flex items-center gap-4 mt-2';
-        const slider = document.createElement('input');
-        slider.type = 'range';
-        slider.name = `q${questionIndex}`;
-        slider.min = '0';
-        slider.max = '10';
-        slider.value = '0';
-        slider.step = '1';
-        slider.className = 'w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer';
-        const sliderValueDisplay = document.createElement('span');
-        sliderValueDisplay.className = 'slider-value bg-blue-100 text-blue-800 font-semibold text-sm px-3 py-1 rounded-full w-12 text-center';
-        sliderValueDisplay.textContent = slider.value;
-        slider.addEventListener('input', () => {
-            sliderValueDisplay.textContent = slider.value;
-        });
-        sliderContainer.appendChild(slider);
-        sliderContainer.appendChild(sliderValueDisplay);
-        qDiv.appendChild(sliderContainer);
-        domainDiv.appendChild(qDiv);
-        questionIndex++;
+// Function to change language
+function changeLanguage(lang) {
+    currentLanguage = lang;
+    
+    // Update active language button styles
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.remove('bg-blue-600', 'text-white');
+        btn.classList.add('bg-gray-300', 'text-gray-700');
     });
-    formContainer.appendChild(domainDiv);
+    
+    // Set active button
+    event.target.classList.remove('bg-gray-300', 'text-gray-700');
+    event.target.classList.add('bg-blue-600', 'text-white');
+    
+    // Refresh questions with new language
+    refreshQuestions();
 }
+
+// Function to refresh questions with current language
+function refreshQuestions() {
+    // Clear existing questions
+    formContainer.innerHTML = '';
+    questionIndex = 0;
+    
+    // Recreate questions with current language
+    for (const [domain, questions] of Object.entries(domains)) {
+        const domainDiv = document.createElement("div");
+        domainDiv.innerHTML = `<h2 class="text-xl font-bold text-blue-700 border-b-2 border-blue-200 pb-2 mb-4">${domain}</h2>`;
+
+        questions.forEach(questionData => {
+            const qDiv = document.createElement("div");
+            qDiv.className = "question py-3";
+            
+            // Use the current language text
+            const questionText = questionData[currentLanguage];
+            qDiv.innerHTML = `<label class='question-label block text-md font-medium text-gray-800'>${questionText}</label>`;
+            
+            const sliderContainer = document.createElement('div');
+            sliderContainer.className = 'slider-container flex items-center gap-4 mt-2';
+            
+            const slider = document.createElement('input');
+            slider.type = 'range';
+            slider.name = `q${questionIndex}`;
+            slider.min = '0';
+            slider.max = '10';
+            slider.value = '0';
+            slider.step = '1';
+            slider.className = 'w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer';
+            
+            const sliderValueDisplay = document.createElement('span');
+            sliderValueDisplay.className = 'slider-value bg-blue-100 text-blue-800 font-semibold text-sm px-3 py-1 rounded-full w-12 text-center';
+            sliderValueDisplay.textContent = slider.value;
+            
+            slider.addEventListener('input', () => {
+                sliderValueDisplay.textContent = slider.value;
+            });
+            
+            sliderContainer.appendChild(slider);
+            sliderContainer.appendChild(sliderValueDisplay);
+            qDiv.appendChild(sliderContainer);
+            domainDiv.appendChild(qDiv);
+            questionIndex++;
+        });
+        formContainer.appendChild(domainDiv);
+    }
+}
+
+// Initialize the form with default language
+refreshQuestions();
 
 // Handle "Other" radio button visibility
 document.querySelectorAll('input[name="evalTime"]').forEach(radio => {
@@ -73,39 +190,122 @@ document.querySelectorAll('input[name="evalTime"]').forEach(radio => {
             otherContainer.classList.remove('hidden');
         } else {
             otherContainer.classList.add('hidden');
-            document.getElementById('otherEvalTime').value = ''; // Clear the input when "Other" is not selected
+            document.getElementById('otherEvalTime').value = '';
         }
     });
 });
 
 /**
- * Calculates the total score for all questions.
+ * Gets the selected evaluation time
  */
-function calculateScores() {
+function getEvaluationTime() {
+    const selectedRadio = document.querySelector('input[name="evalTime"]:checked');
+    if (selectedRadio) {
+        if (selectedRadio.value === 'Other') {
+            return document.getElementById('otherEvalTime').value || 'Other';
+        }
+        return selectedRadio.value;
+    }
+    return 'Not specified';
+}
+
+/**
+ * Calculates domain scores
+ */
+function calculateDomainScores(responses) {
+    const domainIndices = {
+        "Mastication": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+        "Jaw_Mobility": [10, 11, 12, 13, 14],
+        "Verbal_Emotional_Expression": [15, 16, 17, 18, 19]
+    };
+    
+    const domainScores = {};
+    
+    for (const [domain, indices] of Object.entries(domainIndices)) {
+        const scores = indices.map(i => responses[`q${i}`] || 0);
+        domainScores[domain] = {
+            'total': scores.reduce((sum, current) => sum + current, 0),
+            'average': scores.reduce((sum, current) => sum + current, 0) / scores.length,
+            'max_possible': scores.length * 10
+        };
+    }
+    
+    return domainScores;
+}
+
+/**
+ * Calculates the total score and saves to database
+ */
+async function calculateAndSaveScores() {
     const form = document.forms["jflsForm"];
-    const values = [];
+    
+    // Collect all responses
+    const responses = {};
     for (let i = 0; i < questionIndex; i++) {
         const slider = form.elements[`q${i}`];
         if (slider) {
-            values.push(parseInt(slider.value));
-        } else {
-            console.error(`Slider for q${i} not found.`);
-            showCustomMessageBox("An internal error occurred. Please refresh the page.");
-            return;
+            responses[`q${i}`] = parseInt(slider.value);
         }
     }
-    const totalScore = values.reduce((sum, current) => sum + current, 0);
+    
+    // Calculate total score
+    const totalScore = Object.values(responses).reduce((sum, current) => sum + current, 0);
     const maxScore = questionIndex * 10;
+    
+    // Calculate domain scores
+    const domainScores = calculateDomainScores(responses);
+    
+    // Display results
     document.getElementById("results").innerHTML = `
         <strong class="block text-blue-700">Total JFLS-20 Score:</strong> 
         <span class="text-4xl font-bold">${totalScore}</span> / ${maxScore}
     `;
     document.getElementById("results").scrollIntoView({ behavior: 'smooth' });
+    
+    // Save to database (if Python backend is running)
+    await saveToDatabase(responses, totalScore, domainScores);
+}
+
+/**
+ * Sends assessment data to the Python backend
+ */
+async function saveToDatabase(responses, totalScore, domainScores) {
+    const form = document.forms["jflsForm"];
+    
+    const assessmentData = {
+        patientName: form.elements['patientName'].value,
+        age: form.elements['age'].value,
+        gender: form.elements['gender'].value,
+        examDate: form.elements['examDate'].value,
+        evaluationTime: getEvaluationTime(),
+        totalScore: totalScore,
+        domainScores: domainScores,
+        responses: responses
+    };
+    
+    try {
+        const response = await fetch('http://localhost:5000/api/submit-assessment', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(assessmentData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+            console.log('Assessment saved successfully! ID:', result.assessment_id);
+        } else {
+            console.error('Failed to save assessment:', result.message);
+        }
+    } catch (error) {
+        console.log('Python backend not running. Assessment not saved to database.');
+    }
 }
 
 /**
  * Generates and downloads a PDF report of the assessment results.
- * MODIFIED to fit all content onto a single page.
  */
 function downloadPdf() {
     if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF === 'undefined') {
@@ -117,13 +317,12 @@ function downloadPdf() {
     const doc = new jsPDF();
     const form = document.forms["jflsForm"];
 
-    // --- Get Patient Info ---
+    // Get Patient Info
     const patientName = form.elements['patientName'].value || 'N/A';
     const age = form.elements['age'].value || 'N/A';
     const gender = form.elements['gender'].value || 'N/A';
     let examDate = form.elements['examDate'].value;
     if (examDate) {
-        // Format date to dd/mm/yyyy
         const date = new Date(examDate);
         const day = String(date.getDate()).padStart(2, '0');
         const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -137,12 +336,12 @@ function downloadPdf() {
         evalTime = form.elements['otherEvalTime'].value || 'Other (Not specified)';
     }
     
-    // --- PDF Header ---
+    // PDF Header
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(18);
     doc.text("JFLS-20 Assessment Report", 105, 15, null, null, "center");
 
-    // --- Add Patient Info to PDF ---
+    // Patient Info
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
     let y = 25;
@@ -154,14 +353,13 @@ function downloadPdf() {
     y += 6;
     doc.text(`Evaluation Time Point: ${evalTime}`, 15, y);
     
-    // --- Draw a line separator ---
+    // Line separator
     y += 7;
     doc.setLineWidth(0.3);
     doc.line(15, y, 195, y);
     y += 7;
 
-
-    // --- Add Assessment Questions to PDF ---
+    // Assessment Questions
     let currentQuestionNum = 1;
     for (const [domain, questions] of Object.entries(domains)) {
         doc.setFont('helvetica', 'bold');
@@ -169,42 +367,37 @@ function downloadPdf() {
         doc.text(domain, 15, y);
         y += 6;
 
-        questions.forEach(([qEn, qGu]) => {
+        questions.forEach(questionData => {
             const slider = form.elements[`q${currentQuestionNum - 1}`];
             const answer = slider ? slider.value : 'N/A';
-            // Truncate long questions if necessary, though reducing font size helps
-            const questionText = `${currentQuestionNum}. ${qEn}`;
+            const questionText = `${currentQuestionNum}. ${questionData.en}`; // Always use English in PDF
             
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(9);
-            doc.text(questionText, 20, y, { maxWidth: 140 }); // Add maxWidth to wrap text
+            doc.text(questionText, 20, y, { maxWidth: 140 });
             
             doc.setFont('helvetica', 'bold');
             doc.text(`Score: ${answer}`, 185, y, null, null, "right");
 
-            y += 8; // Reduced space for next question
+            y += 8;
             currentQuestionNum++;
         });
-        y += 2; // Reduced extra space between domains
+        y += 2;
     }
 
-    // --- Add Total Score to PDF ---
+    // Total Score
     const totalScoreText = document.getElementById("results").innerText;
     if (totalScoreText && !totalScoreText.includes("will appear here")) {
         doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
-        // Place score at the bottom of the page
-        // Adjust this 'y' value to ensure it's always at the bottom, or just below the last question.
-        // For a single page, we can estimate remaining space. A more robust solution might track y position and add new page if needed.
-        const finalY = Math.max(y, doc.internal.pageSize.height - 25); // Ensure it's not too high up if content is short
+        const finalY = Math.max(y, doc.internal.pageSize.height - 25);
         doc.text(totalScoreText.replace(/\s+/g, ' ').trim(), 105, finalY, null, null, "center");
     }
     
-    // --- Add Footer to PDF ---
+    // Footer
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
     doc.text("Developed by Dr. Hrushikesh Gosai (OMFS)", 105, doc.internal.pageSize.height - 10, null, null, "center");
-
 
     doc.save(`JFLS-20_Report_${patientName.replace(/ /g, '_')}.pdf`);
 }
