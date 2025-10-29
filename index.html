@@ -4,7 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JFLS-20 Assessment Tool</title>
-    
+    <!-- Add this inside the header section, after the title -->
+<div class="language-switcher flex justify-center gap-2 mb-4">
+    <button onclick="changeLanguage('en')" class="lang-btn bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-blue-700">
+        English
+    </button>
+    <button onclick="changeLanguage('hi')" class="lang-btn bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-400">
+        हिन्दी
+    </button>
+    <button onclick="changeLanguage('gu')" class="lang-btn bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-400">
+        ગુજરાતી
+    </button>
+</div>
     <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -21,10 +32,25 @@
 
     <div class="container mx-auto p-4 md:p-8 max-w-4xl">
         
-        <!-- Header Section -->
+        <!-- Header Section with Language Switcher -->
         <header class="text-center mb-8">
-            <h1 class="text-3xl md:text-4xl font-bold text-gray-900">JFLS-20 Assessment</h1>
-            <p class="text-md text-gray-600 mt-2">Jaw Functional Limitation Scale (20-item version)</p>
+            <div class="flex justify-between items-center mb-4">
+                <div></div> <!-- Empty div for spacing -->
+                <div class="language-switcher flex gap-2">
+                    <button onclick="changeLanguage('en')" class="lang-btn bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-blue-700">
+                        English
+                    </button>
+                    <button onclick="changeLanguage('hi')" class="lang-btn bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-400">
+                        हिन्दी
+                    </button>
+                    <button onclick="changeLanguage('gu')" class="lang-btn bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-400">
+                        ગુજરાતી
+                    </button>
+                </div>
+            </div>
+            
+            <h1 id="main-title" class="text-3xl md:text-4xl font-bold text-gray-900">JFLS-20 Assessment</h1>
+            <p id="subtitle" class="text-md text-gray-600 mt-2">Jaw Functional Limitation Scale (20-item version)</p>
         </header>
 
         <!-- Main Form Container -->
@@ -32,51 +58,51 @@
             
             <!-- Patient Information Section -->
             <div class="space-y-6">
-                <h2 class="text-xl font-bold text-blue-700 border-b-2 border-blue-200 pb-2 mb-4">Patient Information</h2>
+                <h2 id="patient-info-title" class="text-xl font-bold text-blue-700 border-b-2 border-blue-200 pb-2 mb-4">Patient Information</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label for="patientName" class="block text-sm font-medium text-gray-700">Patient Name:</label>
+                        <label for="patientName" id="patient-name-label" class="block text-sm font-medium text-gray-700">Patient Name:</label>
                         <input type="text" id="patientName" name="patientName" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                     </div>
                     <div>
-                        <label for="age" class="block text-sm font-medium text-gray-700">Age:</label>
+                        <label for="age" id="age-label" class="block text-sm font-medium text-gray-700">Age:</label>
                         <input type="number" id="age" name="age" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                     </div>
                     <div>
-                        <label for="gender" class="block text-sm font-medium text-gray-700">Gender:</label>
+                        <label for="gender" id="gender-label" class="block text-sm font-medium text-gray-700">Gender:</label>
                         <input type="text" id="gender" name="gender" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                     </div>
                     <div>
-                        <label for="examDate" class="block text-sm font-medium text-gray-700">Date of Exam:</label>
+                        <label for="examDate" id="exam-date-label" class="block text-sm font-medium text-gray-700">Date of Exam:</label>
                         <input type="date" id="examDate" name="examDate" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                     </div>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Evaluation Time Point:</label>
+                    <label id="eval-time-label" class="block text-sm font-medium text-gray-700 mb-2">Evaluation Time Point:</label>
                     <div class="flex flex-wrap gap-x-6 gap-y-2">
                         <div class="flex items-center">
                             <input type="radio" id="evalPreop" name="evalTime" value="Preop" class="form-radio">
-                            <label for="evalPreop" class="ml-2 text-sm text-gray-700">Preop</label>
+                            <label for="evalPreop" id="eval-preop-label" class="ml-2 text-sm text-gray-700">Preop</label>
                         </div>
                         <div class="flex items-center">
                             <input type="radio" id="evalPod7" name="evalTime" value="POD 7" class="form-radio">
-                            <label for="evalPod7" class="ml-2 text-sm text-gray-700">POD 7</label>
+                            <label for="evalPod7" id="eval-pod7-label" class="ml-2 text-sm text-gray-700">POD 7</label>
                         </div>
                         <div class="flex items-center">
                             <input type="radio" id="evalPo1m" name="evalTime" value="PO 1 Month" class="form-radio">
-                            <label for="evalPo1m" class="ml-2 text-sm text-gray-700">PO 1 Month</label>
+                            <label for="evalPo1m" id="eval-po1m-label" class="ml-2 text-sm text-gray-700">PO 1 Month</label>
                         </div>
                         <div class="flex items-center">
                             <input type="radio" id="evalPo3m" name="evalTime" value="PO 3 Months" class="form-radio">
-                            <label for="evalPo3m" class="ml-2 text-sm text-gray-700">PO 3 Months</label>
+                            <label for="evalPo3m" id="eval-po3m-label" class="ml-2 text-sm text-gray-700">PO 3 Months</label>
                         </div>
                         <div class="flex items-center">
                             <input type="radio" id="evalOther" name="evalTime" value="Other" class="form-radio">
-                            <label for="evalOther" class="ml-2 text-sm text-gray-700">Other</label>
+                            <label for="evalOther" id="eval-other-label" class="ml-2 text-sm text-gray-700">Other</label>
                         </div>
                     </div>
                     <div id="otherEvalTimeContainer" class="mt-2 hidden">
-                        <label for="otherEvalTime" class="block text-sm font-medium text-gray-700">Please specify:</label>
+                        <label for="otherEvalTime" id="other-eval-label" class="block text-sm font-medium text-gray-700">Please specify:</label>
                         <input type="text" id="otherEvalTime" name="otherEvalTime" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                     </div>
                 </div>
@@ -89,10 +115,10 @@
 
             <!-- Action Buttons -->
             <div class="flex flex-col sm:flex-row justify-center items-center gap-4 pt-6 border-t border-gray-200">
-                <button type="button" onclick="calculateScores()" class="w-full sm:w-auto bg-blue-600 text-white font-semibold py-3 px-8 rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200">
+                <button type="button" onclick="calculateAndSaveScores()" id="calculate-btn" class="w-full sm:w-auto bg-blue-600 text-white font-semibold py-3 px-8 rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200">
                     Calculate Score
                 </button>
-                <button type="button" onclick="downloadPdf()" class="w-full sm:w-auto bg-gray-700 text-white font-semibold py-3 px-8 rounded-lg shadow-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-600 transition-all duration-200">
+                <button type="button" onclick="downloadPdf()" id="download-btn" class="w-full sm:w-auto bg-gray-700 text-white font-semibold py-3 px-8 rounded-lg shadow-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-600 transition-all duration-200">
                     Download Report (PDF)
                 </button>
             </div>
@@ -101,12 +127,12 @@
         <!-- Results Display Area -->
         <div id="results" class="mt-8 text-center bg-white p-6 rounded-xl shadow-lg text-xl md:text-2xl font-bold text-gray-900">
             <!-- Score will be displayed here -->
-            Your total score will appear here after calculation.
+            <span id="default-result-text">Your total score will appear here after calculation.</span>
         </div>
         
         <!-- Footer -->
         <footer class="text-center mt-12 text-sm text-gray-500">
-            <p>Developed by Dr. Hrushikesh Gosai (OMFS)</p>
+            <p id="footer-text">Developed by Dr. Hrushikesh Gosai (OMFS)</p>
         </footer>
 
     </div>
