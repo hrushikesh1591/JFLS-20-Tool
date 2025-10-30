@@ -190,7 +190,7 @@ async function saveToGoogleSheets(responses, totalScore, domainScores) {
     };
     
     // Replace with your actual Google Apps Script URL
-    const GOOGLE_SCRIPT_URL = 'AKfycbxKLZM1g6PmriJmXe_cMyF5lDcS1JUUwEM6jVlPNpk';
+    const GOOGLE_SCRIPT_URL = https://script.google.com/macros/s/AKfycbzgq2T9fd1mX09z214R97rP6nqvXXlnbaohIYLeCSAV6XLzpcTPwpYDcL_g_1VJTSM/exec, 
     
     try {
         const response = await fetch(GOOGLE_SCRIPT_URL, {
@@ -360,4 +360,5 @@ function showCustomMessageBox(message) {
     overlay.appendChild(messageBox);
     document.body.appendChild(overlay);
 }
+
 
