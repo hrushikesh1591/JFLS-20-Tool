@@ -173,38 +173,82 @@ async function calculateAndSaveScores() {
 }
 
 /**
- * Sends assessment data to the Python backend
+ * Sends assessment data to Google Sheets via Apps Script
  */
-async function saveToDatabase(responses, totalScore, domainScores) {
+async function saveToGoogleSheets(responses, totalScore, domainScores) {
     const form = document.forms["jflsForm"];
+    
     const assessmentData = {
-        patientName: form.elements['patientName'] ? form.elements['patientName'].value : '',
-        age: form.elements['age'] ? form.elements['age'].value : '',
-        gender: form.elements['gender'] ? form.elements['gender'].value : '',
-        examDate: form.elements['examDate'] ? form.elements['examDate'].value : '',
+        patientName: form.elements['patientName'].value,
+        age: form.elements['age'].value,
+        gender: form.elements['gender'].value,
+        examDate: form.elements['examDate'].value,
         evaluationTime: getEvaluationTime(),
         totalScore: totalScore,
         domainScores: domainScores,
         responses: responses
     };
+    
+    // Replace with your actual Google Apps Script URL
+    const GOOGLE_SCRIPT_URL = 'AKfycbxKLZM1g6PmriJmXe_cMyF5lDcS1JUUwEM6jVlPNpk';
+    
     try {
-        const response = await fetch('http://localhost:5000/api/submit-assessment', {
+        const response = await fetch(GOOGLE_SCRIPT_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+            },
             body: JSON.stringify(assessmentData)
         });
+        
         const result = await response.json();
+        console.log("📥 Google Sheets response:", result);
+        
         if (result.status === 'success') {
-            console.log('Assessment saved successfully! ID:', result.assessment_id);
-            showCustomMessageBox('Assessment saved to database successfully!');
+            console.log('✅ Assessment saved to Google Sheets! Row:', result.row);
+            showCustomMessageBox('✅ Assessment saved to Google Sheets successfully!');
+            return true;
         } else {
-            console.error('Failed to save assessment:', result.message);
-            showCustomMessageBox('Failed to save assessment: ' + result.message);
+            throw new Error(result.message);
         }
     } catch (error) {
-        console.log('Python backend not running or error occurred. Assessment not saved to database.');
-        // Silent fail, do not show error message to user
+        console.error('❌ Failed to save to Google Sheets:', error);
+        showCustomMessageBox('❌ Failed to save to Google Sheets: ' + error.message);
+        return false;
     }
+}
+
+/**
+ * Updated calculate function to use Google Sheets
+ */
+async function calculateAndSaveScores() {
+    const form = document.forms["jflsForm"];
+    
+    // Collect all responses
+    const responses = {};
+    for (let i = 0; i < questionIndex; i++) {
+        const slider = form.elements[`q${i}`];
+        if (slider) {
+            responses[`q${i}`] = parseInt(slider.value);
+        }
+    }
+    
+    // Calculate total score
+    const totalScore = Object.values(responses).reduce((sum, current) => sum + current, 0);
+    const maxScore = questionIndex * 10;
+    
+    // Calculate domain scores
+    const domainScores = calculateDomainScores(responses);
+    
+    // Display results
+    document.getElementById("results").innerHTML = `
+        <strong class="block text-blue-700">Total JFLS-20 Score:</strong> 
+        <span class="text-4xl font-bold">${totalScore}</span> / ${maxScore}
+    `;
+    document.getElementById("results").scrollIntoView({ behavior: 'smooth' });
+    
+    // Save to Google Sheets
+    await saveToGoogleSheets(responses, totalScore, domainScores);
 }
 
 /**
@@ -316,3 +360,4 @@ function showCustomMessageBox(message) {
     overlay.appendChild(messageBox);
     document.body.appendChild(overlay);
 }
+
