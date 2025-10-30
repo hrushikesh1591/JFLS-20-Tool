@@ -204,7 +204,7 @@ async function saveToGoogleSheets(responses, totalScore, domainScores) {
     };
     
     // Replace with your actual Google Apps Script URL
-    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxKLZM1g6PmriJmXe_cMyF5lDcS1JUUwEM6jVlPNpk/exec';
+    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzgq2T9fd1mX09z214R97rP6nqvXXlnbaohIYLeCSAV6XLzpcTPwpYDcL_g_1VJTSM/exec';
     
     console.log("📤 Sending to Google Sheets:", assessmentData);
     
@@ -440,3 +440,4 @@ document.addEventListener('DOMContentLoaded', function() {
     testBtn.onclick = testGoogleScript;
     document.querySelector('.language-switcher').appendChild(testBtn);
 });
+
