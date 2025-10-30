@@ -33,31 +33,45 @@ let questionIndex = 0;
 let currentLanguage = 'en'; // Default language
 
 // Function to change language
-function changeLanguage(lang, event) {
+function changeLanguage(lang) {
     currentLanguage = lang;
+    
+    // Update active language button styles
     document.querySelectorAll('.lang-btn').forEach(btn => {
         btn.classList.remove('bg-blue-600', 'text-white');
         btn.classList.add('bg-gray-300', 'text-gray-700');
     });
+    
+    // Set active button
     event.target.classList.remove('bg-gray-300', 'text-gray-700');
     event.target.classList.add('bg-blue-600', 'text-white');
+    
+    // Refresh questions with new language
     refreshQuestions();
 }
 
 // Function to refresh questions with current language
 function refreshQuestions() {
+    // Clear existing questions
     formContainer.innerHTML = '';
     questionIndex = 0;
+    
+    // Recreate questions with current language
     for (const [domain, questions] of Object.entries(domains)) {
         const domainDiv = document.createElement("div");
         domainDiv.innerHTML = `<h2 class="text-xl font-bold text-blue-700 border-b-2 border-blue-200 pb-2 mb-4">${domain}</h2>`;
+
         questions.forEach(questionData => {
             const qDiv = document.createElement("div");
             qDiv.className = "question py-3";
+            
+            // Use the current language text
             const questionText = questionData[currentLanguage];
             qDiv.innerHTML = `<label class='question-label block text-md font-medium text-gray-800'>${questionText}</label>`;
+            
             const sliderContainer = document.createElement('div');
             sliderContainer.className = 'slider-container flex items-center gap-4 mt-2';
+            
             const slider = document.createElement('input');
             slider.type = 'range';
             slider.name = `q${questionIndex}`;
@@ -66,12 +80,15 @@ function refreshQuestions() {
             slider.value = '0';
             slider.step = '1';
             slider.className = 'w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer';
+            
             const sliderValueDisplay = document.createElement('span');
             sliderValueDisplay.className = 'slider-value bg-blue-100 text-blue-800 font-semibold text-sm px-3 py-1 rounded-full w-12 text-center';
             sliderValueDisplay.textContent = slider.value;
+            
             slider.addEventListener('input', () => {
                 sliderValueDisplay.textContent = slider.value;
             });
+            
             sliderContainer.appendChild(slider);
             sliderContainer.appendChild(sliderValueDisplay);
             qDiv.appendChild(sliderContainer);
@@ -81,13 +98,6 @@ function refreshQuestions() {
         formContainer.appendChild(domainDiv);
     }
 }
-
-// Set up language buttons on page load (assumes .lang-btn exists)
-document.querySelectorAll('.lang-btn').forEach(btn => {
-    btn.addEventListener('click', function(event) {
-        changeLanguage(btn.getAttribute('data-lang'), event);
-    });
-});
 
 // Initialize the form with default language
 refreshQuestions();
@@ -125,10 +135,12 @@ function getEvaluationTime() {
 function calculateDomainScores(responses) {
     const domainIndices = {
         "Mastication": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
-        "Jaw Mobility": [10, 11, 12, 13, 14],
-        "Verbal/Emotional Expression": [15, 16, 17, 18, 19]
+        "Jaw_Mobility": [10, 11, 12, 13, 14],
+        "Verbal_Emotional_Expression": [15, 16, 17, 18, 19]
     };
+    
     const domainScores = {};
+    
     for (const [domain, indices] of Object.entries(domainIndices)) {
         const scores = indices.map(i => responses[`q${i}`] || 0);
         domainScores[domain] = {
@@ -137,89 +149,12 @@ function calculateDomainScores(responses) {
             'max_possible': scores.length * 10
         };
     }
+    
     return domainScores;
 }
 
 /**
  * Calculates the total score and saves to database
- */
-async function calculateAndSaveScores() {
-    const form = document.forms["jflsForm"];
-    // Collect all responses
-    const responses = {};
-    for (let i = 0; i < questionIndex; i++) {
-        const slider = form.elements[`q${i}`];
-        if (slider) {
-            responses[`q${i}`] = parseInt(slider.value) || 0;
-        }
-    }
-    // Calculate total score
-    const totalScore = Object.values(responses).reduce((sum, current) => sum + current, 0);
-    const maxScore = questionIndex * 10;
-    // Calculate domain scores
-    const domainScores = calculateDomainScores(responses);
-    // Display results
-    document.getElementById("results").innerHTML = `
-        <strong class="block text-blue-700">Total JFLS-20 Score:</strong> 
-        <span class="text-4xl font-bold">${totalScore}</span> / ${maxScore}
-    `;
-    document.getElementById("results").scrollIntoView({ behavior: 'smooth' });
-    // Save to database (if Python backend is running)
-    try {
-        await saveToDatabase(responses, totalScore, domainScores);
-    } catch (error) {
-        showCustomMessageBox('Error saving to database: ' + error.message);
-    }
-}
-
-/**
- * Sends assessment data to Google Sheets via Apps Script
- */
-async function saveToGoogleSheets(responses, totalScore, domainScores) {
-    const form = document.forms["jflsForm"];
-    
-    const assessmentData = {
-        patientName: form.elements['patientName'].value,
-        age: form.elements['age'].value,
-        gender: form.elements['gender'].value,
-        examDate: form.elements['examDate'].value,
-        evaluationTime: getEvaluationTime(),
-        totalScore: totalScore,
-        domainScores: domainScores,
-        responses: responses
-    };
-    
-    // Replace with your actual Google Apps Script URL
-    const GOOGLE_SCRIPT_URL = https://script.google.com/macros/s/AKfycbzgq2T9fd1mX09z214R97rP6nqvXXlnbaohIYLeCSAV6XLzpcTPwpYDcL_g_1VJTSM/exec, 
-    
-    try {
-        const response = await fetch(GOOGLE_SCRIPT_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(assessmentData)
-        });
-        
-        const result = await response.json();
-        console.log("📥 Google Sheets response:", result);
-        
-        if (result.status === 'success') {
-            console.log('✅ Assessment saved to Google Sheets! Row:', result.row);
-            showCustomMessageBox('✅ Assessment saved to Google Sheets successfully!');
-            return true;
-        } else {
-            throw new Error(result.message);
-        }
-    } catch (error) {
-        console.error('❌ Failed to save to Google Sheets:', error);
-        showCustomMessageBox('❌ Failed to save to Google Sheets: ' + error.message);
-        return false;
-    }
-}
-
-/**
- * Updated calculate function to use Google Sheets
  */
 async function calculateAndSaveScores() {
     const form = document.forms["jflsForm"];
@@ -252,6 +187,122 @@ async function calculateAndSaveScores() {
 }
 
 /**
+ * Sends assessment data to Google Sheets via Apps Script
+ */
+async function saveToGoogleSheets(responses, totalScore, domainScores) {
+    const form = document.forms["jflsForm"];
+    
+    const assessmentData = {
+        patientName: form.elements['patientName'].value,
+        age: form.elements['age'].value,
+        gender: form.elements['gender'].value,
+        examDate: form.elements['examDate'].value,
+        evaluationTime: getEvaluationTime(),
+        totalScore: totalScore,
+        domainScores: domainScores,
+        responses: responses
+    };
+    
+    // Replace with your actual Google Apps Script URL
+    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxKLZM1g6PmriJmXe_cMyF5lDcS1JUUwEM6jVlPNpk/exec';
+    
+    console.log("📤 Sending to Google Sheets:", assessmentData);
+    
+    try {
+        const response = await fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(assessmentData)
+        });
+        
+        const result = await response.json();
+        console.log("📥 Google Sheets response:", result);
+        
+        if (result.status === 'success') {
+            console.log('✅ Assessment saved to Google Sheets! Row:', result.row);
+            showCustomMessageBox('✅ Assessment saved to Google Sheets successfully!');
+            return true;
+        } else {
+            throw new Error(result.message);
+        }
+    } catch (error) {
+        console.error('❌ Failed to save to Google Sheets:', error);
+        
+        // Fallback: Save to localStorage
+        const saved = saveToLocalStorage(responses, totalScore, domainScores, {
+            patientName: form.elements['patientName'].value,
+            age: form.elements['age'].value,
+            gender: form.elements['gender'].value,
+            examDate: form.elements['examDate'].value,
+            evaluationTime: getEvaluationTime()
+        });
+        
+        if (saved) {
+            showCustomMessageBox('✅ Assessment saved to browser storage (Google Sheets unavailable)');
+        } else {
+            showCustomMessageBox('❌ Failed to save assessment. Please check your connection.');
+        }
+        
+        return saved;
+    }
+}
+
+/**
+ * Saves assessment data to browser localStorage as fallback
+ */
+function saveToLocalStorage(responses, totalScore, domainScores, formData) {
+    try {
+        const assessmentData = {
+            ...formData,
+            totalScore: totalScore,
+            domainScores: domainScores,
+            responses: responses,
+            timestamp: new Date().toISOString(),
+            savedLocally: true
+        };
+        
+        // Get existing data or initialize empty array
+        const existingData = JSON.parse(localStorage.getItem('jfls_assessments') || '[]');
+        
+        // Add new assessment
+        existingData.push(assessmentData);
+        
+        // Save back to localStorage
+        localStorage.setItem('jfls_assessments', JSON.stringify(existingData));
+        
+        console.log('✅ Assessment saved to browser storage');
+        return true;
+    } catch (error) {
+        console.error('❌ Failed to save to browser storage:', error);
+        return false;
+    }
+}
+
+/**
+ * Test Google Apps Script connection
+ */
+async function testGoogleScript() {
+    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxKLZM1g6PmriJmXe_cMyF5lDcS1JUUwEM6jVlPNpk/exec';
+    
+    try {
+        const response = await fetch(GOOGLE_SCRIPT_URL);
+        const text = await response.text();
+        console.log('Google Script test response:', text);
+        
+        try {
+            const data = JSON.parse(text);
+            showCustomMessageBox('✅ Google Script is working: ' + data.message);
+        } catch (e) {
+            showCustomMessageBox('⚠️ Google Script returned non-JSON. Check deployment permissions.');
+        }
+    } catch (error) {
+        showCustomMessageBox('❌ Cannot reach Google Script: ' + error.message);
+    }
+}
+
+/**
  * Generates and downloads a PDF report of the assessment results.
  */
 function downloadPdf() {
@@ -259,13 +310,16 @@ function downloadPdf() {
         showCustomMessageBox("PDF generation library not loaded. Please ensure you have an internet connection.");
         return;
     }
+
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     const form = document.forms["jflsForm"];
-    const patientName = form.elements['patientName'] ? form.elements['patientName'].value : 'N/A';
-    const age = form.elements['age'] ? form.elements['age'].value : 'N/A';
-    const gender = form.elements['gender'] ? form.elements['gender'].value : 'N/A';
-    let examDate = form.elements['examDate'] ? form.elements['examDate'].value : '';
+
+    // Get Patient Info
+    const patientName = form.elements['patientName'].value || 'N/A';
+    const age = form.elements['age'].value || 'N/A';
+    const gender = form.elements['gender'].value || 'N/A';
+    let examDate = form.elements['examDate'].value;
     if (examDate) {
         const date = new Date(examDate);
         const day = String(date.getDate()).padStart(2, '0');
@@ -276,10 +330,12 @@ function downloadPdf() {
         examDate = 'N/A';
     }
     let evalTime = getEvaluationTime();
+    
     // PDF Header
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(18);
     doc.text("JFLS-20 Assessment Report", 105, 15, null, null, "center");
+
     // Patient Info
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
@@ -291,11 +347,13 @@ function downloadPdf() {
     doc.text(`Gender: ${gender}`, 115, y);
     y += 6;
     doc.text(`Evaluation Time Point: ${evalTime}`, 15, y);
+    
     // Line separator
     y += 7;
     doc.setLineWidth(0.3);
     doc.line(15, y, 195, y);
     y += 7;
+
     // Assessment Questions
     let currentQuestionNum = 1;
     for (const [domain, questions] of Object.entries(domains)) {
@@ -303,20 +361,25 @@ function downloadPdf() {
         doc.setFontSize(11);
         doc.text(domain, 15, y);
         y += 6;
+
         questions.forEach(questionData => {
             const slider = form.elements[`q${currentQuestionNum - 1}`];
             const answer = slider ? slider.value : 'N/A';
-            const questionText = `${currentQuestionNum}. ${questionData.en}`;
+            const questionText = `${currentQuestionNum}. ${questionData.en}`; // Always use English in PDF
+            
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(9);
             doc.text(questionText, 20, y, { maxWidth: 140 });
+            
             doc.setFont('helvetica', 'bold');
             doc.text(`Score: ${answer}`, 185, y, null, null, "right");
+
             y += 8;
             currentQuestionNum++;
         });
         y += 2;
     }
+
     // Total Score
     const totalScoreText = document.getElementById("results").innerText;
     if (totalScoreText && !totalScoreText.includes("will appear here")) {
@@ -325,10 +388,12 @@ function downloadPdf() {
         const finalY = Math.max(y, doc.internal.pageSize.height - 25);
         doc.text(totalScoreText.replace(/\s+/g, ' ').trim(), 105, finalY, null, null, "center");
     }
+    
     // Footer
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
     doc.text("Developed by Dr. Hrushikesh Gosai (OMFS)", 105, doc.internal.pageSize.height - 10, null, null, "center");
+
     doc.save(`JFLS-20_Report_${patientName.replace(/ /g, '_')}.pdf`);
 }
 
@@ -341,24 +406,37 @@ function showCustomMessageBox(message) {
     if (existingOverlay) {
         document.body.removeChild(existingOverlay);
     }
+
     const overlay = document.createElement('div');
     overlay.className = 'message-overlay';
     overlay.style.cssText = `position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center; z-index: 1000;`;
+    
     const messageBox = document.createElement('div');
-    messageBox.style.cssText = `background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); text-align: center; max-width: 90%; width: 400px; font-family: 'Inter', Arial, sans-serif;`;
+    messageBox.style.cssText = `background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); text-align: center; max-width: 90%; width: 400px; font-family: 'Inter', sans-serif; color: #333; position: relative; border-top: 5px solid #3b82f6;`;
+    
     const messageText = document.createElement('p');
     messageText.textContent = message;
     messageText.style.cssText = `font-size: 1.1em; line-height: 1.5; margin-bottom: 20px;`;
     messageBox.appendChild(messageText);
+    
     const closeButton = document.createElement('button');
     closeButton.textContent = 'OK';
     closeButton.style.cssText = `padding: 10px 25px; font-size: 1em; background-color: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; transition: background-color 0.2s ease;`;
     closeButton.onmouseover = () => closeButton.style.backgroundColor = '#2563eb';
     closeButton.onmouseout = () => closeButton.style.backgroundColor = '#3b82f6';
     closeButton.onclick = () => document.body.removeChild(overlay);
+    
     messageBox.appendChild(closeButton);
     overlay.appendChild(messageBox);
     document.body.appendChild(overlay);
 }
 
-
+// Add test button to check Google Script connection
+document.addEventListener('DOMContentLoaded', function() {
+    // Add test button if needed
+    const testBtn = document.createElement('button');
+    testBtn.textContent = 'Test Google Connection';
+    testBtn.className = 'bg-green-600 text-white px-4 py-2 rounded-lg text-sm mt-4';
+    testBtn.onclick = testGoogleScript;
+    document.querySelector('.language-switcher').appendChild(testBtn);
+});
