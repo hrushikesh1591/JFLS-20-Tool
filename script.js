@@ -194,41 +194,66 @@ function calculateScores() {
     showCustomMessageBox(`Total Score: ${totalScore} / ${maxScore}`);
   }
 }
-
+/**
+ * Collects all form data and sends it to a Web3Forms endpoint using fetch.
+ */
 function submitData() {
-  const endpoint = 'https://formspree.io/f/xyzlgebp'; 
+  // ⚠️ CRITICAL: PASTE YOUR WEB3FORMS ACCESS KEY HERE
+  const accessKey = '4d970246-fe08-4100-9008-1bbe5128d152'; // Replace this placeholder!
+  const endpoint = 'https://api.web3forms.com/submit';
+  
   const form = document.forms["jflsForm"];
-  if (!form) {
-    showCustomMessageBox('Data submission failed: Form element not found.');
+  
+  if (!form || accessKey.includes('4d970246-fe08-4100-9008-1bbe5128d152')) {
+    showCustomMessageBox('Data submission failed: Please ensure you have pasted your Web3Forms Access Key into the script.js file.');
     return;
   }
+
+  // 1. Collect Patient Info + Scores
   const formData = new FormData(form);
+  const data = {};
+  formData.forEach((value, key) => {
+      data[key] = value;
+  });
+
+  // ADD THE ACCESS KEY and other Web3Forms specific fields to the data
+  data['access_key'] = accessKey;
+  data['subject'] = 'JFLS-20 Assessment Submission'; // Optional subject line
+  
+  // 2. Calculate Total Score (Good to save it)
   let totalScore = 0;
   for (let i = 0; i < questionIndex; i++) {
-    const el = form.elements[`q${i}`];
-    totalScore += parseInt(el.value, 10) || 0;
+      const el = form.elements[`q${i}`];
+      totalScore += parseInt(el.value, 10) || 0;
   }
-  formData.append('totalJFLS20Score', totalScore);
-
+  data['totalJFLS20Score'] = totalScore;
+  
+  // 3. Send the data to Web3Forms
   fetch(endpoint, {
-    method: 'POST',
-    body: formData
-  }).then(response => {
-    if (response.ok) {
-      showCustomMessageBox('Data saved successfully! Check your Formspree dashboard.');
-      // Optionally: form.reset();
-    } else {
-      response.json().then(errorData => {
-        console.error("Submission error:", errorData);
-        showCustomMessageBox('Submission failed. Server responded with an error. Please check the console (F12) for details.');
-      });
-    }
-  }).catch(error => {
-    console.error('Network Error:', error);
-    showCustomMessageBox('A network error occurred. Check your internet connection.');
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+      },
+      body: JSON.stringify(data)
+  })
+  .then(response => response.json()) // Web3Forms always returns JSON
+  .then(data => {
+      if (data.success) {
+          showCustomMessageBox('Data saved successfully! Check your Web3Forms Dashboard/Email.');
+          // You can uncomment this line if you want to clear the form after submission:
+          // form.reset(); 
+      } else {
+          console.error("Submission error:", data);
+          showCustomMessageBox(`Submission failed. Error: ${data.message || 'Unknown issue'}. Check the console (F12) for details.`);
+      }
+  })
+  .catch(error => {
+      console.error('Network Error:', error);
+      // We will now ONLY see this for a true network/internet failure
+      showCustomMessageBox('A true network error occurred. Please check your connection.');
   });
 }
-
 function downloadPdf() {
   if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF === 'undefined') {
     showCustomMessageBox("PDF generation library not loaded. Please ensure html includes jsPDF.");
@@ -370,3 +395,4 @@ document.addEventListener('DOMContentLoaded', () => {
   const downloadBtn = document.getElementById('downloadPdfButton');
   if (downloadBtn) downloadBtn.addEventListener('click', downloadPdf);
 });
+
