@@ -1,8 +1,20 @@
-// script.js
-// JFLS-20 dynamic form renderer with English, Gujarati, and Hindi labels
-// Save as UTF-8 and include alongside your index.html
+// script.js - FIREBASE VERSION
+// JFLS-20 dynamic form renderer with Firebase integration
 
-// Domains: [ English, Gujarati, Hindi ]
+// ===== FIREBASE CONFIGURATION =====
+const firebaseConfig = {
+    apiKey: "AIzaSyBrsf9HGaw0peWYDbAZ2AC15pDTEOAJX6Y",
+    authDomain: "tmj-arthoscopy-database.firebaseapp.com",
+    projectId: "tmj-arthoscopy-database",
+    storageBucket: "tmj-arthoscopy-database.firebasetorage.app",
+    messagingSenderId: "42278799701",
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// ===== DOMAINS AND QUESTIONS =====
 const domains = {
   "Mastication": [
     ["Chewing tough food (e.g., meat)", "કઠિન ખોરાક (જેમ કે મટન) ચાવવામાં કેટલી મુશ્કેલી થાય છે?", "कठोर भोजन (जैसे मांस) चबाने में कितनी कठिनाई होती है?"],
@@ -32,13 +44,12 @@ const domains = {
   ]
 };
 
-// DOM references and state
+// ===== APPLICATION STATE =====
 const formContainer = document.getElementById("formContainer");
 let questionIndex = 0;
+let currentLanguage = localStorage.getItem('jflsLang') || 'en';
 
-// Initialize language from local storage, default to 'en'
-let currentLanguage = localStorage.getItem('jflsLang') || 'en'; 
-
+// ===== LANGUAGE FUNCTIONS =====
 function ensureLanguageSwitcher() {
   let switcher = document.querySelector('.language-switcher');
   if (!switcher) {
@@ -91,9 +102,10 @@ function pickLabel(qArr) {
   return qArr[langIndex] || qArr[0] || '';
 }
 
+// ===== FORM RENDERING =====
 function refreshQuestions() {
   if (!formContainer) {
-    console.warn('formContainer element not found. Ensure an element with id="formContainer" exists in the DOM.');
+    console.warn('formContainer element not found.');
     return;
   }
   formContainer.innerHTML = '';
@@ -161,10 +173,11 @@ function wireEvalTimeRadios() {
   });
 }
 
+// ===== SCORE CALCULATION =====
 function calculateScores() {
   const form = document.forms["jflsForm"];
   if (!form) {
-    showCustomMessageBox('Form not found. Ensure the form has name="jflsForm".');
+    showCustomMessageBox('Form not found.');
     return;
   }
 
@@ -173,7 +186,7 @@ function calculateScores() {
     const el = form.elements[`q${i}`];
     if (!el) {
       console.error(`Slider not found: q${i}`);
-      showCustomMessageBox('An internal error occurred while reading responses. Please refresh the page and try again.');
+      showCustomMessageBox('An internal error occurred while reading responses.');
       return;
     }
     const v = parseInt(el.value, 10);
@@ -193,70 +206,65 @@ function calculateScores() {
   } else {
     showCustomMessageBox(`Total Score: ${totalScore} / ${maxScore}`);
   }
+  return totalScore;
 }
-/**
- * Collects all form data and sends it to a Web3Forms endpoint using fetch.
- */
-function submitData() {
-  // ⚠️ CRITICAL: PASTE YOUR WEB3FORMS ACCESS KEY HERE
-  const accessKey = '4d970246-fe08-4100-9008-1bbe5128d152'; // Replace this placeholder!
-  const endpoint = 'https://api.web3forms.com/submit';
-  
+
+// ===== FIREBASE DATA SAVING =====
+async function saveToFirebase() {
   const form = document.forms["jflsForm"];
   
-  if (!form || accessKey.includes('4d970246-fe08-4100-9008-1bbe5128d152')) {
-    showCustomMessageBox('Data submission failed: Please ensure you have pasted your Web3Forms Access Key into the script.js file.');
+  if (!form) {
+    showCustomMessageBox('Form not found.');
     return;
   }
 
-  // 1. Collect Patient Info + Scores
-  const formData = new FormData(form);
-  const data = {};
-  formData.forEach((value, key) => {
-      data[key] = value;
-  });
+  try {
+    // 1. Collect all form data
+    const formData = {
+      // Patient Information
+      patientName: form.elements['patientName']?.value || '',
+      age: form.elements['age']?.value || '',
+      gender: form.elements['gender']?.value || '',
+      examDate: form.elements['examDate']?.value || '',
+      evalTime: form.elements['evalTime']?.value || '',
+      otherEvalTime: form.elements['otherEvalTime']?.value || '',
+      
+      // Assessment data
+      responses: {},
+      totalScore: calculateScores(),
+      
+      // Metadata
+      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+      language: currentLanguage,
+      tool: 'JFLS-20'
+    };
 
-  // ADD THE ACCESS KEY and other Web3Forms specific fields to the data
-  data['access_key'] = accessKey;
-  data['subject'] = 'JFLS-20 Assessment Submission'; // Optional subject line
-  
-  // 2. Calculate Total Score (Good to save it)
-  let totalScore = 0;
-  for (let i = 0; i < questionIndex; i++) {
+    // 2. Collect all question responses
+    for (let i = 0; i < questionIndex; i++) {
       const el = form.elements[`q${i}`];
-      totalScore += parseInt(el.value, 10) || 0;
-  }
-  data['totalJFLS20Score'] = totalScore;
-  
-  // 3. Send the data to Web3Forms
-  fetch(endpoint, {
-      method: 'POST',
-      headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-      },
-      body: JSON.stringify(data)
-  })
-  .then(response => response.json()) // Web3Forms always returns JSON
-  .then(data => {
-      if (data.success) {
-          showCustomMessageBox('Data saved successfully! Check your Web3Forms Dashboard/Email.');
-          // You can uncomment this line if you want to clear the form after submission:
-          // form.reset(); 
-      } else {
-          console.error("Submission error:", data);
-          showCustomMessageBox(`Submission failed. Error: ${data.message || 'Unknown issue'}. Check the console (F12) for details.`);
+      if (el) {
+        formData.responses[`q${i}`] = parseInt(el.value, 10) || 0;
       }
-  })
-  .catch(error => {
-      console.error('Network Error:', error);
-      // We will now ONLY see this for a true network/internet failure
-      showCustomMessageBox('A true network error occurred. Please check your connection.');
-  });
+    }
+
+    // 3. Save to Firestore
+    const docRef = await db.collection('jfls20-responses').add(formData);
+    
+    showCustomMessageBox('✅ Data saved successfully to database! Entry ID: ' + docRef.id);
+    
+    // Optional: Clear form after successful save
+    // form.reset();
+    
+  } catch (error) {
+    console.error('Error saving to Firebase:', error);
+    showCustomMessageBox('❌ Error saving data: ' + error.message);
+  }
 }
+
+// ===== PDF GENERATION =====
 function downloadPdf() {
   if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF === 'undefined') {
-    showCustomMessageBox("PDF generation library not loaded. Please ensure html includes jsPDF.");
+    showCustomMessageBox("PDF generation library not loaded.");
     return;
   }
 
@@ -264,7 +272,7 @@ function downloadPdf() {
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
   const form = document.forms["jflsForm"];
   if (!form) {
-    showCustomMessageBox('Form not found. Ensure the form has name="jflsForm".');
+    showCustomMessageBox('Form not found.');
     return;
   }
 
@@ -355,6 +363,7 @@ function downloadPdf() {
   doc.save(`JFLS20_Report_${safeName}.pdf`);
 }
 
+// ===== UTILITY FUNCTIONS =====
 function showCustomMessageBox(message) {
   const existing = document.querySelector('.message-overlay');
   if (existing) existing.remove();
@@ -381,6 +390,7 @@ function showCustomMessageBox(message) {
   document.body.appendChild(overlay);
 }
 
+// ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', () => {
   ensureLanguageSwitcher();
   refreshQuestions();
@@ -389,10 +399,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const calcBtn = document.getElementById('calculateBtn');
   if (calcBtn) calcBtn.addEventListener('click', calculateScores);
   
+  // UPDATED: Now points to Firebase function
   const saveBtn = document.getElementById('saveDataBtn');
-  if (saveBtn) saveBtn.addEventListener('click', submitData); 
+  if (saveBtn) saveBtn.addEventListener('click', saveToFirebase); 
   
   const downloadBtn = document.getElementById('downloadPdfButton');
   if (downloadBtn) downloadBtn.addEventListener('click', downloadPdf);
 });
-
