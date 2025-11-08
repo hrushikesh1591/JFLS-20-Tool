@@ -218,7 +218,13 @@ function calculateScores() {
     showCustomMessageBox(`Total Score: ${totalScore} / ${maxScore}`);
   }
 }
-
+function submitData() {
+  const endpoint = 'https://formspree.io/f/xyzlgebp'; // <--- **PASTE YOUR URL HERE**
+  const form = document.forms["jflsForm"];
+  if (!form) {
+    showCustomMessageBox('Form not found. Cannot submit data.');
+    return;
+  }
 /**
  * Generate and download PDF (uses jsPDF). Keeps content compact to try to fit a single page.
  */
@@ -380,3 +386,4 @@ document.addEventListener('DOMContentLoaded', () => {
   const downloadBtn = document.getElementById('downloadPdfButton') || document.getElementById('downloadBtn');
   if (downloadBtn) downloadBtn.addEventListener('click', downloadPdf);
 });
+
