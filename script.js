@@ -1,15 +1,15 @@
 // script.js
-// JFLS-20 dynamic form renderer with English, Gujarati and Hindi labels
+// JFLS-20 dynamic form renderer with English, Gujarati, and Hindi labels
 // Save as UTF-8 and include alongside your index.html
 
 // Domains: [ English, Gujarati, Hindi ]
 const domains = {
   "Mastication": [
-    ["Chewing tough food (e.g., meat)", "કઠિન ખોરાક (જેમ કે મટન) ચાવવામાં કેટલી મુશ્કેલી થાય છે?", "कठोर भोजन (जैसे मांस) चबाने में कितनी कठिनााई होती है?"],
+    ["Chewing tough food (e.g., meat)", "કઠિન ખોરાક (જેમ કે મટન) ચાવવામાં કેટલી મુશ્કેલી થાય છે?", "कठोर भोजन (जैसे मांस) चबाने में कितनी कठिनाई होती है?"],
     ["Chewing hard items (like raw vegetables)", "કાચા શાકભાજી જેવા કઠિન વસ્તુઓ ચાવવામાં કેટલી મુશ્કેલી થાય છે?", "कच्ची सब्ज़ियाँ जैसी कठोर चीज़ें चबाने में कितनी कठिनाई होती है?"],
     ["Chewing chicken or cooked meat", "સામાન્ય રીતે બનાવેલું ચિકન કે મટન ચાવવામાં કેટલી મુશ્કેલી છે?", "पका हुआ चिकन या मांस चबाने में कितनी कठिनाई होती है?"],
     ["Chewing crispy foods (crackers/toast)", "ક્રિસ્પી વસ્તુઓ (જેમ કે ખાખરા કે ટોસ્ટ) ચાવવામાં કેટલી મુશ્કેલી છે?", "करारी/टोस्ट जैसी कुरकुरी चीज़ें चबाने में कितनी कठिनाई होती है?"],
-    ["Chewing soft food (like rice or dal)", "નરમ ખોરાક (જેમ કે રાંધેલું ભાત કે દાળ) ચવામાં કેટલી મુશ્કેલી થાય છે?", "चावल या दाल जैसी नरम चीज़ें चबाने में कितनी कठिनाई होती है?"],
+    ["Chewing soft food (like rice or dal)", "નરમ ખોરાક (જેમ કે રાંધેલું ભાત કે દાળ) ચાવવામાં કેટલી મુશ્કેલી થાય છે?", "चावल या दाल जैसी नरम चीज़ें चबाने में कितनी कठिनाई होती है?"],
     ["Eating mashed or pureed food", "મસેલેલું અથવા પ્યુરી કરેલું ખોરાક ખાવામાં કેટલી મુશ્કેલી છે?", "मसला हुआ या प्यूरी किया हुआ भोजन खाने में कितनी कठिनाई होती है?"],
     ["Opening mouth wide enough to bite", "કંઈક કાટવા માટે મોઢું પૂરતું ખોલવામાં કેટલી મુશ્કેલી થાય છે?", "काटने/कौर लेने के लिए मुंह पर्याप्त चौड़ा खोलने में कितनी कठिनाई होती है?"],
     ["Eating sandwich or burger", "સેન્ડવિચ કે બર્ગર ખાવામાં કેટલી મુશ્કેલી છે?", "सैंडविच या बर्गर खाने में कितनी कठिनाई होती है?"],
@@ -26,7 +26,7 @@ const domains = {
   "Verbal/Emotional Expression": [
     ["Talking for a long time", "લાંબા સમય સુધી વાત કરવી મુશ્કેલ લાગે છે?", "लंबे समय तक बात करने में कितनी कठिनाई होती है?"],
     ["Laughing", "હસવાથી ચહેરામાં દુખાવો થાય છે?", "हँसने/हँसते समय दर्द होता है क्या?"],
-    ["Singing or raising voice", "ગીત ગાવા કે મોટેથી બોલવામાં કેટલી મુશ્કેલી થાય છે?", "गाना गाने या आवाज़ ऊँची करने में कितनी कठिनाई होती है?"],
+    ["Singing or raising voice", "ગીત ગાવા કે મોટેથી બોલવામાં કેટલી મુશ્કેલી જાય છે?", "गाना गाने या आवाज़ ऊँची करने में कितनी कठिनाई होती है?"],
     ["Expressing emotions like anger or joy", "ગુસ્સો કે આનંદ જેવી ભાવનાઓ દર્શાવવામાં કેટલી મુશ્કેલી થાય છે?", "गुस्सा या खुशी जैसी भावनाएँ व्यक्त करने (चेहरे पर) में कितनी कठिनाई होती है?"],
     ["Facial movement while talking", "વાત કરતી વખતે ચહેરાના હલનચલનમાં કેટલી મુશ્કેલી હોય છે?", "बात करते समय चेहरे की हरकतों में कितनी कठिनाई होती है?"]
   ]
@@ -39,7 +39,6 @@ let questionIndex = 0;
 // Initialize language from local storage, default to 'en'
 let currentLanguage = localStorage.getItem('jflsLang') || 'en'; 
 
-// Render language switcher if not present
 function ensureLanguageSwitcher() {
   let switcher = document.querySelector('.language-switcher');
   if (!switcher) {
@@ -51,7 +50,6 @@ function ensureLanguageSwitcher() {
       document.body.insertBefore(switcher, document.body.firstChild);
     }
   }
-  // create buttons
   switcher.innerHTML = `
     <div style="display:flex; gap:8px; margin-bottom:8px;">
       <button class="lang-btn" data-lang="en" style="padding:6px 10px; border-radius:6px; background:#1d4ed8; color:#fff; border:none;">English</button>
@@ -59,9 +57,8 @@ function ensureLanguageSwitcher() {
       <button class="lang-btn" data-lang="hi" style="padding:6px 10px; border-radius:6px; background:#e5e7eb; color:#111; border:none;">हिन्दी</button>
     </div>
   `;
-  // attach listeners
   switcher.querySelectorAll('.lang-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
+    btn.addEventListener('click', () => {
       const lang = btn.getAttribute('data-lang') || 'en';
       setLanguage(lang);
     });
@@ -84,26 +81,22 @@ function updateLangButtonStyles() {
 
 function setLanguage(lang) {
   currentLanguage = lang || 'en';
-  localStorage.setItem('jflsLang', currentLanguage); // Save new language to local storage
+  localStorage.setItem('jflsLang', currentLanguage);
   updateLangButtonStyles();
   refreshQuestions();
 }
 
-// Helper to pick label by current language (fallback to English)
 function pickLabel(qArr) {
-  // qArr is [en, gu, hi] or [en, gu]
-  if (!Array.isArray(qArr)) return '';
   const langIndex = { en: 0, gu: 1, hi: 2 }[currentLanguage] ?? 0;
   return qArr[langIndex] || qArr[0] || '';
 }
 
-// Build the form UI (Now only shows one language)
 function refreshQuestions() {
   if (!formContainer) {
     console.warn('formContainer element not found. Ensure an element with id="formContainer" exists in the DOM.');
     return;
   }
-  formContainer.innerHTML = ''; // clear
+  formContainer.innerHTML = '';
   questionIndex = 0;
 
   for (const [domain, questions] of Object.entries(domains)) {
@@ -114,9 +107,7 @@ function refreshQuestions() {
     questions.forEach(qArr => {
       const qDiv = document.createElement("div");
       qDiv.className = "question py-3";
-
       const primary = pickLabel(qArr);
-      
       qDiv.innerHTML = `<label class='question-label block text-md font-medium text-gray-800'>${primary}</label>`;
 
       const sliderContainer = document.createElement('div');
@@ -150,12 +141,10 @@ function refreshQuestions() {
     formContainer.appendChild(domainDiv);
   }
 
-  // If results box exists, clear it
   const resultsEl = document.getElementById("results");
   if (resultsEl) resultsEl.innerHTML = '<em>Total score will appear here after calculation.</em>';
 }
 
-// Wire "Other" evalTime radios (if present in DOM)
 function wireEvalTimeRadios() {
   document.querySelectorAll('input[name="evalTime"]').forEach(radio => {
     radio.addEventListener('change', (event) => {
@@ -172,9 +161,6 @@ function wireEvalTimeRadios() {
   });
 }
 
-/**
- * Calculates the total score for all questions and shows it in #results.
- */
 function calculateScores() {
   const form = document.forms["jflsForm"];
   if (!form) {
@@ -205,66 +191,44 @@ function calculateScores() {
     `;
     resultsEl.scrollIntoView({ behavior: 'smooth' });
   } else {
-    // fallback: show alert
     showCustomMessageBox(`Total Score: ${totalScore} / ${maxScore}`);
   }
 }
 
-/**
- * Collects all form data and sends it to a Formspree endpoint using fetch.
- */
 function submitData() {
-  // ✅ FIX 1: Formspree URL has been added
   const endpoint = 'https://formspree.io/f/xyzlgebp'; 
   const form = document.forms["jflsForm"];
-  
   if (!form) {
     showCustomMessageBox('Data submission failed: Form element not found.');
     return;
   }
-
-  // 1. Collect Patient Info + Scores
   const formData = new FormData(form);
-  const data = {};
-  formData.forEach((value, key) => {
-      data[key] = value;
-  });
-
-  // 2. Calculate Total Score (Good to save it)
   let totalScore = 0;
   for (let i = 0; i < questionIndex; i++) {
-      const el = form.elements[`q${i}`];
-      totalScore += parseInt(el.value, 10) || 0;
+    const el = form.elements[`q${i}`];
+    totalScore += parseInt(el.value, 10) || 0;
   }
-  data['totalJFLS20Score'] = totalScore;
-  
-  // 3. Send the data to Formspree
-fetch(endpoint, {
+  formData.append('totalJFLS20Score', totalScore);
+
+  fetch(endpoint, {
     method: 'POST',
     body: formData
-  body: JSON.stringify(data)
-  })
-  .then(response => {
-      if (response.ok) {
-          showCustomMessageBox('Data saved successfully! Check your Formspree dashboard.');
-          // You can uncomment this line if you want to clear the form after submission:
-          // form.reset(); 
-      } else {
-          response.json().then(errorData => {
-            console.error("Submission error:", errorData);
-            showCustomMessageBox('Submission failed. Server responded with an error. Please check the console (F12) for details.');
-          });
-      }
-  })
-  .catch(error => {
-      console.error('Network Error:', error);
-      showCustomMessageBox('A network error occurred. Check your internet connection.');
+  }).then(response => {
+    if (response.ok) {
+      showCustomMessageBox('Data saved successfully! Check your Formspree dashboard.');
+      // Optionally: form.reset();
+    } else {
+      response.json().then(errorData => {
+        console.error("Submission error:", errorData);
+        showCustomMessageBox('Submission failed. Server responded with an error. Please check the console (F12) for details.');
+      });
+    }
+  }).catch(error => {
+    console.error('Network Error:', error);
+    showCustomMessageBox('A network error occurred. Check your internet connection.');
   });
 }
 
-/**
- * Generate and download PDF (uses jsPDF). Keeps content compact to try to fit a single page.
- */
 function downloadPdf() {
   if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF === 'undefined') {
     showCustomMessageBox("PDF generation library not loaded. Please ensure html includes jsPDF.");
@@ -279,7 +243,6 @@ function downloadPdf() {
     return;
   }
 
-  // Patient info fields (best-effort)
   const patientName = (form.elements['patientName'] && form.elements['patientName'].value) || 'N/A';
   const age = (form.elements['age'] && form.elements['age'].value) || 'N/A';
   const gender = (form.elements['gender'] && form.elements['gender'].value) || 'N/A';
@@ -297,7 +260,6 @@ function downloadPdf() {
     evalTime = form.elements['otherEvalTime'].value || 'Other (not specified)';
   }
 
-  // Header
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
   doc.text("JFLS-20 Assessment Report", doc.internal.pageSize.getWidth() / 2, 14, null, null, 'center');
@@ -312,13 +274,11 @@ function downloadPdf() {
   doc.text(`Gender: ${gender}`, 110, y);
   y += 6;
   doc.text(`Evaluation time: ${evalTime}`, 14, y);
-
   y += 6;
   doc.setLineWidth(0.3);
   doc.line(14, y, doc.internal.pageSize.getWidth() - 14, y);
   y += 6;
 
-  // Questions and scores
   let qNum = 1;
   const pageHeight = doc.internal.pageSize.getHeight();
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -333,22 +293,18 @@ function downloadPdf() {
     doc.setFontSize(9);
 
     for (const qArr of questions) {
-      const qText = `${qNum}. ${qArr[0]}`; // use english short for PDF list; you may customize
+      const qText = `${qNum}. ${qArr[0]}`;
       const el = form.elements[`q${qNum - 1}`];
       const ans = el ? (el.value || '0') : 'N/A';
 
-      // Wrap question text if long
       const split = doc.splitTextToSize(qText, pageWidth - 70);
       doc.text(split, 16, y);
-      // Score on right
       doc.setFont('helvetica', 'bold');
       doc.text(`${ans}`, rightColX, y, null, null, 'right');
       doc.setFont('helvetica', 'normal');
-
       y += (split.length * 5) + 2;
       qNum++;
 
-      // New page if near bottom
       if (y > pageHeight - 30) {
         doc.addPage();
         y = 20;
@@ -357,7 +313,6 @@ function downloadPdf() {
     y += 4;
   }
 
-  // Total score
   const resultsEl = document.getElementById("results");
   if (resultsEl && resultsEl.innerText.trim()) {
     const totalText = resultsEl.innerText.replace(/\n/g, ' ');
@@ -367,7 +322,6 @@ function downloadPdf() {
     doc.text(totalText, pageWidth / 2, finalY, null, null, 'center');
   }
 
-  // Footer
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   doc.text("Developed by Dr. Hrushikesh Gosai (OMFS)", pageWidth / 2, pageHeight - 10, null, null, 'center');
@@ -376,11 +330,7 @@ function downloadPdf() {
   doc.save(`JFLS20_Report_${safeName}.pdf`);
 }
 
-/**
- * Custom message box (nicer than alert)
- */
 function showCustomMessageBox(message) {
-  // Remove existing overlays
   const existing = document.querySelector('.message-overlay');
   if (existing) existing.remove();
 
@@ -406,13 +356,11 @@ function showCustomMessageBox(message) {
   document.body.appendChild(overlay);
 }
 
-// Initialization on DOM ready
 document.addEventListener('DOMContentLoaded', () => {
   ensureLanguageSwitcher();
   refreshQuestions();
   wireEvalTimeRadios();
 
-  // Wire action buttons using their IDs
   const calcBtn = document.getElementById('calculateBtn');
   if (calcBtn) calcBtn.addEventListener('click', calculateScores);
   
@@ -422,5 +370,3 @@ document.addEventListener('DOMContentLoaded', () => {
   const downloadBtn = document.getElementById('downloadPdfButton');
   if (downloadBtn) downloadBtn.addEventListener('click', downloadPdf);
 });
-
-
