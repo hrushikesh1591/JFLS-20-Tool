@@ -83,6 +83,7 @@ function updateLangButtonStyles() {
 function setLanguage(lang) {
   currentLanguage = lang || 'en';
   updateLangButtonStyles();
+ 
   refreshQuestions();
 }
 
@@ -112,21 +113,12 @@ function refreshQuestions() {
       const qDiv = document.createElement("div");
       qDiv.className = "question py-3";
 
-      // Use pickLabel to render question in chosen language and also show secondary language (if applicable)
+      // --- MODIFIED SECTION: ONLY PICKING PRIMARY LANGUAGE ---
       const primary = pickLabel(qArr);
-      // For secondary display: show Gujarati (if current is en or hi), otherwise show English
-      let secondary = '';
-      if (currentLanguage === 'gu') {
-        secondary = qArr[0] || '';
-      } else if (currentLanguage === 'hi') {
-        secondary = qArr[1] || qArr[0] || '';
-      } else {
-        secondary = qArr[1] || '';
-      }
-
-      const secondaryHtml = secondary ? `<br><span class='text-gray-600 font-normal' style="font-size:0.95rem">${secondary}</span>` : '';
-
-      qDiv.innerHTML = `<label class='question-label block text-md font-medium text-gray-800'>${primary}${secondaryHtml}</label>`;
+      
+      // The secondary language display logic has been removed.
+      
+      qDiv.innerHTML = `<label class='question-label block text-md font-medium text-gray-800'>${primary}</label>`;
 
       const sliderContainer = document.createElement('div');
       sliderContainer.className = 'slider-container flex items-center gap-4 mt-2';
@@ -163,7 +155,6 @@ function refreshQuestions() {
   const resultsEl = document.getElementById("results");
   if (resultsEl) resultsEl.innerHTML = '<em>Total score will appear here after calculation.</em>';
 }
-
 // Wire "Other" evalTime radios (if present in DOM)
 function wireEvalTimeRadios() {
   document.querySelectorAll('input[name="evalTime"]').forEach(radio => {
@@ -218,17 +209,68 @@ function calculateScores() {
     showCustomMessageBox(`Total Score: ${totalScore} / ${maxScore}`);
   }
 }
+
+/**
+ * Collects all form data and sends it to a Formspree endpoint using fetch.
+ * THIS IS THE NEW FUNCTION
+ */
 function submitData() {
-  const endpoint = 'https://formspree.io/f/xyzlgebp'; // <--- **PASTE YOUR URL HERE**
+  // ⚠️ CRITICAL STEP: REPLACE THE PLACEHOLDER BELOW WITH YOUR ACTUAL FORMSPREE URL
+  const endpoint = 'https://formspree.io/f/xyzlgebp'; 
   const form = document.forms["jflsForm"];
-  if (!form) {
-    showCustomMessageBox('Form not found. Cannot submit data.');
+  
+  if (!form || endpoint.includes('https://formspree.io/f/xyzlgebp')) {
+    showCustomMessageBox('Data submission failed: Please ensure you have pasted your unique Formspree URL into the script.js file.');
     return;
   }
+
+  // 1. Collect Patient Info + Scores
+  const formData = new FormData(form);
+  const data = {};
+  formData.forEach((value, key) => {
+      data[key] = value;
+  });
+
+  // 2. Calculate Total Score (Good to save it)
+  let totalScore = 0;
+  for (let i = 0; i < questionIndex; i++) {
+      const el = form.elements[`q${i}`];
+      totalScore += parseInt(el.value, 10) || 0;
+  }
+  data['totalJFLS20Score'] = totalScore;
+  
+  // 3. Send the data to Formspree
+  fetch(endpoint, {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+      },
+      body: JSON.stringify(data)
+  })
+  .then(response => {
+      if (response.ok) {
+          showCustomMessageBox('Data saved successfully! Check your Formspree dashboard. You can now download the PDF or reset the form.');
+          //form.reset(); // Optional: You might not want to reset immediately
+      } else {
+          // Attempt to read error message from Formspree
+          response.json().then(errorData => {
+            console.error("Submission error:", errorData);
+            showCustomMessageBox('Submission failed. Server responded with an error. Please check the console (F12) for details.');
+          });
+      }
+  })
+  .catch(error => {
+      console.error('Network Error:', error);
+      showCustomMessageBox('A network error occurred. Check your internet connection.');
+  });
+}
+
 /**
  * Generate and download PDF (uses jsPDF). Keeps content compact to try to fit a single page.
  */
 function downloadPdf() {
+  // ... (Your existing downloadPdf function code remains here) ...
   if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF === 'undefined') {
     showCustomMessageBox("PDF generation library not loaded. Please ensure html includes jsPDF.");
     return;
@@ -375,15 +417,13 @@ document.addEventListener('DOMContentLoaded', () => {
   refreshQuestions();
   wireEvalTimeRadios();
 
-  // Wire action buttons using their IDs
+  // Wire action buttons using their IDs - THIS IS THE CORRECT WIRING
   const calcBtn = document.getElementById('calculateBtn');
   if (calcBtn) calcBtn.addEventListener('click', calculateScores);
   
-  // NEW: Wire the Save Data button
   const saveBtn = document.getElementById('saveDataBtn');
-  if (saveBtn) saveBtn.addEventListener('click', submitData);
+  if (saveBtn) saveBtn.addEventListener('click', submitData); // Connects to the new function
   
-  const downloadBtn = document.getElementById('downloadPdfButton') || document.getElementById('downloadBtn');
+  const downloadBtn = document.getElementById('downloadPdfButton'); // Only need to check for the main ID
   if (downloadBtn) downloadBtn.addEventListener('click', downloadPdf);
 });
-
