@@ -239,13 +239,10 @@ function submitData() {
   data['totalJFLS20Score'] = totalScore;
   
   // 3. Send the data to Formspree
-  // 3. Send the data to Formspree
 fetch(endpoint, {
     method: 'POST',
     body: formData
-})
-...
-      body: JSON.stringify(data)
+  body: JSON.stringify(data)
   })
   .then(response => {
       if (response.ok) {
@@ -425,4 +422,5 @@ document.addEventListener('DOMContentLoaded', () => {
   const downloadBtn = document.getElementById('downloadPdfButton');
   if (downloadBtn) downloadBtn.addEventListener('click', downloadPdf);
 });
+
 
