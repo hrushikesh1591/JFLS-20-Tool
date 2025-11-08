@@ -5,7 +5,7 @@
 // Domains: [ English, Gujarati, Hindi ]
 const domains = {
   "Mastication": [
-    ["Chewing tough food (e.g., meat)", "કઠિન ખોરાક (જેમ કે મટન) ચાવવામાં કેટલી મુશ્કેલી થાય છે?", "कठोर भोजन (जैसे मांस) चबाने में कितनी कठिनाई होती है?"],
+    ["Chewing tough food (e.g., meat)", "કઠિન ખોરાક (જેમ કે મટન) ચાવવામાં કેટલી મુશ્કેલી થાય છે?", "कठोर भोजन (जैसे मांस) चबाने में कितनी कठिनााई होती है?"],
     ["Chewing hard items (like raw vegetables)", "કાચા શાકભાજી જેવા કઠિન વસ્તુઓ ચાવવામાં કેટલી મુશ્કેલી થાય છે?", "कच्ची सब्ज़ियाँ जैसी कठोर चीज़ें चबाने में कितनी कठिनाई होती है?"],
     ["Chewing chicken or cooked meat", "સામાન્ય રીતે બનાવેલું ચિકન કે મટન ચાવવામાં કેટલી મુશ્કેલી છે?", "पका हुआ चिकन या मांस चबाने में कितनी कठिनाई होती है?"],
     ["Chewing crispy foods (crackers/toast)", "ક્રિસ્પી વસ્તુઓ (જેમ કે ખાખરા કે ટોસ્ટ) ચાવવામાં કેટલી મુશ્કેલી છે?", "करारी/टोस्ट जैसी कुरकुरी चीज़ें चबाने में कितनी कठिनाई होती है?"],
@@ -35,7 +35,9 @@ const domains = {
 // DOM references and state
 const formContainer = document.getElementById("formContainer");
 let questionIndex = 0;
-let currentLanguage = 'en'; // 'en' | 'gu' | 'hi'
+
+// Initialize language from local storage, default to 'en'
+let currentLanguage = localStorage.getItem('jflsLang') || 'en'; 
 
 // Render language switcher if not present
 function ensureLanguageSwitcher() {
@@ -82,8 +84,8 @@ function updateLangButtonStyles() {
 
 function setLanguage(lang) {
   currentLanguage = lang || 'en';
+  localStorage.setItem('jflsLang', currentLanguage); // Save new language to local storage
   updateLangButtonStyles();
- 
   refreshQuestions();
 }
 
@@ -95,7 +97,7 @@ function pickLabel(qArr) {
   return qArr[langIndex] || qArr[0] || '';
 }
 
-// Build the form UI
+// Build the form UI (Now only shows one language)
 function refreshQuestions() {
   if (!formContainer) {
     console.warn('formContainer element not found. Ensure an element with id="formContainer" exists in the DOM.');
@@ -113,10 +115,7 @@ function refreshQuestions() {
       const qDiv = document.createElement("div");
       qDiv.className = "question py-3";
 
-      // --- MODIFIED SECTION: ONLY PICKING PRIMARY LANGUAGE ---
       const primary = pickLabel(qArr);
-      
-      // The secondary language display logic has been removed.
       
       qDiv.innerHTML = `<label class='question-label block text-md font-medium text-gray-800'>${primary}</label>`;
 
@@ -155,6 +154,7 @@ function refreshQuestions() {
   const resultsEl = document.getElementById("results");
   if (resultsEl) resultsEl.innerHTML = '<em>Total score will appear here after calculation.</em>';
 }
+
 // Wire "Other" evalTime radios (if present in DOM)
 function wireEvalTimeRadios() {
   document.querySelectorAll('input[name="evalTime"]').forEach(radio => {
@@ -212,15 +212,14 @@ function calculateScores() {
 
 /**
  * Collects all form data and sends it to a Formspree endpoint using fetch.
- * THIS IS THE NEW FUNCTION
  */
 function submitData() {
-  // ⚠️ CRITICAL STEP: REPLACE THE PLACEHOLDER BELOW WITH YOUR ACTUAL FORMSPREE URL
+  // ✅ FIX 1: Formspree URL has been added
   const endpoint = 'https://formspree.io/f/xyzlgebp'; 
   const form = document.forms["jflsForm"];
   
-  if (!form || endpoint.includes('https://formspree.io/f/xyzlgebp')) {
-    showCustomMessageBox('Data submission failed: Please ensure you have pasted your unique Formspree URL into the script.js file.');
+  if (!form) {
+    showCustomMessageBox('Data submission failed: Form element not found.');
     return;
   }
 
@@ -250,10 +249,10 @@ function submitData() {
   })
   .then(response => {
       if (response.ok) {
-          showCustomMessageBox('Data saved successfully! Check your Formspree dashboard. You can now download the PDF or reset the form.');
-          //form.reset(); // Optional: You might not want to reset immediately
+          showCustomMessageBox('Data saved successfully! Check your Formspree dashboard.');
+          // You can uncomment this line if you want to clear the form after submission:
+          // form.reset(); 
       } else {
-          // Attempt to read error message from Formspree
           response.json().then(errorData => {
             console.error("Submission error:", errorData);
             showCustomMessageBox('Submission failed. Server responded with an error. Please check the console (F12) for details.');
@@ -270,7 +269,6 @@ function submitData() {
  * Generate and download PDF (uses jsPDF). Keeps content compact to try to fit a single page.
  */
 function downloadPdf() {
-  // ... (Your existing downloadPdf function code remains here) ...
   if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF === 'undefined') {
     showCustomMessageBox("PDF generation library not loaded. Please ensure html includes jsPDF.");
     return;
@@ -417,13 +415,13 @@ document.addEventListener('DOMContentLoaded', () => {
   refreshQuestions();
   wireEvalTimeRadios();
 
-  // Wire action buttons using their IDs - THIS IS THE CORRECT WIRING
+  // Wire action buttons using their IDs
   const calcBtn = document.getElementById('calculateBtn');
   if (calcBtn) calcBtn.addEventListener('click', calculateScores);
   
   const saveBtn = document.getElementById('saveDataBtn');
-  if (saveBtn) saveBtn.addEventListener('click', submitData); // Connects to the new function
+  if (saveBtn) saveBtn.addEventListener('click', submitData); 
   
-  const downloadBtn = document.getElementById('downloadPdfButton'); // Only need to check for the main ID
+  const downloadBtn = document.getElementById('downloadPdfButton');
   if (downloadBtn) downloadBtn.addEventListener('click', downloadPdf);
 });
