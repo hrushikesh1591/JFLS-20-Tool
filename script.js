@@ -2,7 +2,7 @@
 // Save as UTF-8 and include alongside index.html
 // IMPORTANT: replace GOOGLE_SCRIPT_URL with your deployed Apps Script web app URL
 
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec'; // <-- replace me
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwMVkxx4yRpSCDYQDF-LzW2NL3l5vu716oH8_T8zhIdGYLojdi0FHZnYPTeF8oteaFLRw/exec'; // <-- replace me
 
 // Domains: [ English, Gujarati, Hindi ]
 const domains = {
@@ -302,3 +302,4 @@ document.addEventListener('DOMContentLoaded', () => {
   const resetBtn = document.getElementById('resetBtn');
   if (resetBtn) resetBtn.addEventListener('click', resetForm);
 });
+
