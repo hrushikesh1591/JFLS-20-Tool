@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Researcher Dashboard - JFLS-20 Data</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+</head>
+<body class="bg-gray-50 min-h-screen p-8">
+    <!-- Password Screen -->
+    <div id="loginScreen" class="fixed inset-0 bg-gray-900 flex items-center justify-center z-50">
+        <div class="bg-white p-8 rounded-lg shadow-xl max-w-md w-full">
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">Researcher Access</h2>
+            <p class="text-gray-600 mb-4">Enter research password:</p>
+            <input type="password" id="researchPassword" class="w-full p-3 border border-gray-300 rounded-lg mb-4" placeholder="Enter password">
+            <button onclick="checkPassword()" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 font-semibold">
+                Access Dashboard
+            </button>
+            <p id="passwordError" class="text-red-600 mt-2 hidden">Incorrect password</p>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto" style="display: none;">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">Research Data Dashboard</h1>
+            <p class="text-gray-600">JFLS-20 Assessment - Longitudinal Patient Data</p>
+            <p class="text-sm text-red-600 font-semibold mt-2">RESEARCHER ACCESS ONLY</p>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-white p-4 rounded-lg shadow text-center">
+                <div class="text-2xl font-bold text-blue-600" id="totalSubmissions">0</div>
+                <div class="text-gray-600">Total Submissions</div>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow text-center">
+                <div class="text-2xl font-bold text-green-600" id="uniquePatients">0</div>
+                <div class="text-gray-600">Unique Patients</div>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow text-center">
+                <div class="text-2xl font-bold text-purple-600" id="latestSubmission">-</div>
+                <div class="text-gray-600">Latest Submission</div>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow text-center">
+                <div class="text-2xl font-bold text-orange-600" id="dataRange">-</div>
+                <div class="text-gray-600">Data Range</div>
+            </div>
+        </div>
+
+        <!-- Filters Section -->
+        <div class="bg-white p-6 rounded-xl shadow-lg mb-8">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Patient & Data Filters</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                <!-- Patient Name Filter -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Patient Name</label>
+                    <input type="text" id="patientFilter" placeholder="Search patient..." 
+                           class="w-full border border-gray-300 rounded-md p-2" oninput="filterData()">
+                </div>
+                
+                <!-- Evaluation Time Filter -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Evaluation Time</label>
+                    <select id="evalTimeFilter" class="w-full border border-gray-300 rounded-md p-2" onchange="filterData()">
+                        <option value="">All Evaluation Times</option>
+                        <option value="Preop">Preop</option>
+                        <option value="POD 7">POD 7</option>
+                        <option value="PO 1 Month">PO 1 Month</option>
+                        <option value="PO 3 Months">PO 3 Months</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                
+                <!-- Date Range -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                    <input type="date" id="startDate" class="w-full border border-gray-300 rounded-md p-2" onchange="filterData()">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                    <input type="date" id="endDate" class="w-full border border-gray-300 rounded-md p-2" onchange="filterData()">
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="flex flex-wrap gap-2">
+                <button onclick="clearFilters()" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 text-sm">
+                    Clear All Filters
+                </button>
+                <button onclick="showAllData()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 text-sm">
+                    Show All Data
+                </button>
+                <button onclick="groupByPatient()" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 text-sm">
+                    Group by Patient
+                </button>
+            </div>
+        </div>
+
+        <!-- Export Controls -->
+        <div class="bg-white p-6 rounded-xl shadow-lg mb-8">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Data Export</h2>
+            
+            <div class="flex flex-wrap gap-4 mb-4">
+                <button onclick="exportBasicCSV()" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 font-semibold">
+                    📊 Export Basic CSV
+                </button>
+                <button onclick="exportDetailedCSV()" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-semibold">
+                    📋 Export Detailed CSV
+                </button>
+                <button onclick="exportLongitudinalCSV()" class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 font-semibold">
+                    📈 Export Longitudinal Data
+                </button>
+            </div>
+
+            <div class="text-sm text-gray-600">
+                <p><strong>Current Filter:</strong> <span id="currentFilterInfo">Showing all data</span></p>
+                <p><strong>Records Displayed:</strong> <span id="recordCount">0</span> of <span id="totalRecords">0</span></p>
+            </div>
+        </div>
+
+        <!-- Data Preview -->
+        <div class="bg-white p-6 rounded-xl shadow-lg">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-900">
+                    Patient Submissions 
+                    <span class="text-sm font-normal text-gray-600" id="tableSubtitle">(Chronological Order)</span>
+                </h2>
+                <div class="flex gap-2">
+                    <button onclick="toggleSortOrder()" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 text-sm">
+                        Sort: <span id="sortOrder">Newest First</span>
+                    </button>
+                    <button onclick="loadAllData()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm">
+                        Refresh Data
+                    </button>
+                </div>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white" id="dataTable">
+                    <thead class="bg-gray-200">
+                        <tr>
+                            <th class="py-2 px-4 border-b cursor-pointer" onclick="sortByPatient()">Patient Name ▲</th>
+                            <th class="py-2 px-4 border-b">Age</th>
+                            <th class="py-2 px-4 border-b">Gender</th>
+                            <th class="py-2 px-4 border-b">Exam Date</th>
+                            <th class="py-2 px-4 border-b cursor-pointer" onclick="sortByEvalTime()">Evaluation Time</th>
+                            <th class="py-2 px-4 border-b cursor-pointer" onclick="sortByScore()">Total Score</th>
+                            <th class="py-2 px-4 border-b cursor-pointer" onclick="sortByDate()">Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Data will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="mt-4 text-center">
+                <div id="loadingMessage" class="hidden text-blue-600">Loading data...</div>
+                <div id="noDataMessage" class="hidden text-gray-500">No data found.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBrsf9HGaw0peWYDbAZ2AC15pDTEOAJX6Y",
+            authDomain: "tmj-arthoscopy-database.firebaseapp.com",
+            projectId: "tmj-arthoscopy-database",
+            storageBucket: "tmj-arthoscopy-database.firebasetorage.app",
+            messagingSenderId: "42278799701",
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        let allData = [];
+        let filteredData = [];
+        let sortNewestFirst = true;
+        let currentGrouping = 'chronological';
+
+        // Password check
+        function checkPassword() {
+            const password = document.getElementById('researchPassword').value;
+            const errorElement = document.getElementById('passwordError');
+            
+            if (password === 'JFLS') {  // Change this password
+                document.getElementById('loginScreen').style.display = 'none';
+                document.querySelector('.max-w-7xl').style.display = 'block';
+                loadAllData();
+            } else {
+                errorElement.classList.remove('hidden');
+            }
+        }
+
+        // Load all data
+        async function loadAllData() {
+            showLoading(true);
+            try {
+                const snapshot = await db.collection('jfls20-responses')
+                    .orderBy('timestamp', 'desc')
+                    .get();
+                
+                allData = [];
+                snapshot.forEach(doc => {
+                    allData.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+
+                updateStats();
+                filterData(); // Apply any existing filters
+                showLoading(false);
+                
+            } catch (error) {
+                console.error('Error loading data:', error);
+                alert('Error loading data: ' + error.message);
+                showLoading(false);
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('totalSubmissions').textContent = allData.length;
+            
+            // Count unique patients
+            const uniquePatients = new Set(allData.map(item => 
+                item.patientName?.toLowerCase().trim() || 'unknown'
+            ));
+            document.getElementById('uniquePatients').textContent = uniquePatients.size;
+            
+            // Latest submission
+            if (allData.length > 0) {
+                const latest = allData[0].timestamp?.toDate().toLocaleDateString() || 'Unknown';
+                document.getElementById('latestSubmission').textContent = latest;
+            }
+            
+            // Data range
+            if (allData.length > 0) {
+                const dates = allData.map(item => item.timestamp?.toDate()).filter(Boolean);
+                const oldest = new Date(Math.min(...dates));
+                const newest = new Date(Math.max(...dates));
+                document.getElementById('dataRange').textContent = 
+                    `${oldest.toLocaleDateString()} - ${newest.toLocaleDateString()}`;
+            }
+
+            document.getElementById('totalRecords').textContent = allData.length;
+        }
+
+        // Filtering functions
+        function filterData() {
+            const patientFilter = document.getElementById('patientFilter').value.toLowerCase();
+            const evalTimeFilter = document.getElementById('evalTimeFilter').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            filteredData = allData.filter(item => {
+                // Patient name filter
+                const patientName = item.patientName?.toLowerCase() || '';
+                if (patientFilter && !patientName.includes(patientFilter)) {
+                    return false;
+                }
+
+                // Evaluation time filter
+                if (evalTimeFilter && item.evalTime !== evalTimeFilter) {
+                    return false;
+                }
+
+                // Date range filter
+                if (startDate || endDate) {
+                    const itemDate = item.timestamp?.toDate();
+                    if (!itemDate) return false;
+
+                    const itemTime = itemDate.getTime();
+                    const startTime = startDate ? new Date(startDate).getTime() : -Infinity;
+                    const endTime = endDate ? new Date(endDate + 'T23:59:59').getTime() : Infinity;
+
+                    if (itemTime < startTime || itemTime > endTime) {
+                        return false;
+                    }
+                }
+
+                return true;
+            });
+
+            // Apply current sorting
+            applySorting();
+            updateFilterInfo();
+        }
+
+        function applySorting() {
+            if (currentGrouping === 'patient') {
+                groupByPatient();
+            } else {
+                displayDataInTable(filteredData);
+            }
+        }
+
+        function updateFilterInfo() {
+            const patientFilter = document.getElementById('patientFilter').value;
+            const evalTimeFilter = document.getElementById('evalTimeFilter').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            let filterInfo = 'Showing all data';
+            const filters = [];
+
+            if (patientFilter) filters.push(`Patient: "${patientFilter}"`);
+            if (evalTimeFilter) filters.push(`Evaluation: ${evalTimeFilter}`);
+            if (startDate) filters.push(`From: ${startDate}`);
+            if (endDate) filters.push(`To: ${endDate}`);
+
+            if (filters.length > 0) {
+                filterInfo = filters.join(' | ');
+            }
+
+            document.getElementById('currentFilterInfo').textContent = filterInfo;
+            document.getElementById('recordCount').textContent = filteredData.length;
+        }
+
+        // Group by patient function
+        function groupByPatient() {
+            currentGrouping = 'patient';
+            document.getElementById('tableSubtitle').textContent = '(Grouped by Patient)';
+
+            // Group data by patient name
+            const patientGroups = {};
+            filteredData.forEach(item => {
+                const patientKey = item.patientName?.toLowerCase().trim() || 'unknown';
+                if (!patientGroups[patientKey]) {
+                    patientGroups[patientKey] = [];
+                }
+                patientGroups[patientKey].push(item);
+            });
+
+            // Sort each patient's entries by date (newest first)
+            Object.values(patientGroups).forEach(patientEntries => {
+                patientEntries.sort((a, b) => 
+                    new Date(b.timestamp?.toDate()) - new Date(a.timestamp?.toDate())
+                );
+            });
+
+            // Convert to array for display
+            const groupedData = [];
+            Object.values(patientGroups).forEach(patientEntries => {
+                groupedData.push(...patientEntries);
+                // Add empty row as separator (except after last group)
+                if (groupedData.length < filteredData.length) {
+                    groupedData.push(null); // null represents separator row
+                }
+            });
+
+            displayDataInTable(groupedData, true);
+        }
+
+        function displayDataInTable(data, showSeparators = false) {
+            const tableBody = document.getElementById('tableBody');
+            const noDataMessage = document.getElementById('noDataMessage');
+            
+            if (data.length === 0) {
+                tableBody.innerHTML = '';
+                noDataMessage.classList.remove('hidden');
+                return;
+            }
+            
+            noDataMessage.classList.add('hidden');
+            
+            let html = '';
+            data.forEach((item, index) => {
+                if (item === null && showSeparators) {
+                    // Separator row
+                    html += `<tr class="bg-gray-100 h-2"><td colspan="7"></td></tr>`;
+                    return;
+                }
+
+                const isNewPatient = showSeparators && index > 0 && 
+                    data[index-1] !== null && 
+                    item.patientName?.toLowerCase().trim() !== data[index-1].patientName?.toLowerCase().trim();
+
+                if (isNewPatient && index > 0) {
+                    html += `<tr class="bg-gray-100 h-2"><td colspan="7"></td></tr>`;
+                }
+
+                html += `
+                    <tr class="hover:bg-gray-50 ${isNewPatient ? 'border-t-2 border-blue-200' : ''}">
+                        <td class="py-2 px-4 border-b font-semibold">${item.patientName || 'N/A'}</td>
+                        <td class="py-2 px-4 border-b">${item.age || 'N/A'}</td>
+                        <td class="py-2 px-4 border-b">${item.gender || 'N/A'}</td>
+                        <td class="py-2 px-4 border-b">${item.examDate || 'N/A'}</td>
+                        <td class="py-2 px-4 border-b">
+                            <span class="inline-block px-2 py-1 rounded-full text-xs font-semibold 
+                                ${getEvalTimeColor(item.evalTime)}">
+                                ${item.evalTime || 'N/A'}
+                            </span>
+                        </td>
+                        <td class="py-2 px-4 border-b font-bold text-center 
+                            ${getScoreColor(item.totalScore)}">
+                            ${item.totalScore || 0}
+                        </td>
+                        <td class="py-2 px-4 border-b text-sm">${item.timestamp?.toDate().toLocaleString() || 'N/A'}</td>
+                    </tr>
+                `;
+            });
+            tableBody.innerHTML = html;
+        }
+
+        function getEvalTimeColor(evalTime) {
+            const colors = {
+                'Preop': 'bg-blue-100 text-blue-800',
+                'POD 7': 'bg-green-100 text-green-800',
+                'PO 1 Month': 'bg-purple-100 text-purple-800',
+                'PO 3 Months': 'bg-orange-100 text-orange-800',
+                'Other': 'bg-gray-100 text-gray-800'
+            };
+            return colors[evalTime] || 'bg-gray-100 text-gray-800';
+        }
+
+        function getScoreColor(score) {
+            if (score >= 80) return 'text-red-600';
+            if (score >= 50) return 'text-orange-600';
+            if (score >= 20) return 'text-yellow-600';
+            return 'text-green-600';
+        }
+
+        // Sorting functions
+        function toggleSortOrder() {
+            sortNewestFirst = !sortNewestFirst;
+            filteredData.reverse();
+            document.getElementById('sortOrder').textContent = sortNewestFirst ? 'Newest First' : 'Oldest First';
+            applySorting();
+        }
+
+        function sortByPatient() {
+            filteredData.sort((a, b) => {
+                const nameA = a.patientName?.toLowerCase() || '';
+                const nameB = b.patientName?.toLowerCase() || '';
+                return nameA.localeCompare(nameB);
+            });
+            currentGrouping = 'chronological';
+            document.getElementById('tableSubtitle').textContent = '(Sorted by Patient Name)';
+            displayDataInTable(filteredData);
+        }
+
+        function sortByEvalTime() {
+            const evalOrder = {'Preop': 1, 'POD 7': 2, 'PO 1 Month': 3, 'PO 3 Months': 4, 'Other': 5};
+            filteredData.sort((a, b) => {
+                const orderA = evalOrder[a.evalTime] || 6;
+                const orderB = evalOrder[b.evalTime] || 6;
+                return orderA - orderB;
+            });
+            currentGrouping = 'chronological';
+            document.getElementById('tableSubtitle').textContent = '(Sorted by Evaluation Time)';
+            displayDataInTable(filteredData);
+        }
+
+        function sortByScore() {
+            filteredData.sort((a, b) => (b.totalScore || 0) - (a.totalScore || 0));
+            currentGrouping = 'chronological';
+            document.getElementById('tableSubtitle').textContent = '(Sorted by Score - High to Low)';
+            displayDataInTable(filteredData);
+        }
+
+        function sortByDate() {
+            filteredData.sort((a, b) => new Date(b.timestamp?.toDate()) - new Date(a.timestamp?.toDate()));
+            currentGrouping = 'chronological';
+            document.getElementById('tableSubtitle').textContent = '(Sorted by Date - Newest First)';
+            displayDataInTable(filteredData);
+        }
+
+        // Utility functions
+        function showLoading(show) {
+            const loadingMessage = document.getElementById('loadingMessage');
+            if (show) {
+                loadingMessage.classList.remove('hidden');
+            } else {
+                loadingMessage.classList.add('hidden');
+            }
+        }
+
+        function clearFilters() {
+            document.getElementById('patientFilter').value = '';
+            document.getElementById('evalTimeFilter').value = '';
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+            filterData();
+        }
+
+        function showAllData() {
+            clearFilters();
+            currentGrouping = 'chronological';
+            document.getElementById('tableSubtitle').textContent = '(Chronological Order)';
+            displayDataInTable(allData);
+        }
+
+      
+        // Export Functions - COMPLETE VERSION
+        function exportBasicCSV() {
+            const dataToExport = filteredData.length > 0 ? filteredData : allData;
+            
+            if (dataToExport.length === 0) {
+                alert('No data to export.');
+                return;
+            }
+
+            let csv = 'Patient Name,Age,Gender,Exam Date,Evaluation Time,Total Score,Timestamp,Document ID\n';
+            
+            dataToExport.forEach(item => {
+                const timestamp = item.timestamp?.toDate().toISOString() || '';
+                csv += `"${item.patientName || ''}","${item.age || ''}","${item.gender || ''}","${item.examDate || ''}","${item.evalTime || ''}","${item.totalScore || 0}","${timestamp}","${item.id}"\n`;
+            });
+
+            downloadCSV(csv, `jfls20_basic_export_${new Date().toISOString().split('T')[0]}.csv`);
+        }
+
+        function exportDetailedCSV() {
+            const dataToExport = filteredData.length > 0 ? filteredData : allData;
+            
+            if (dataToExport.length === 0) {
+                alert('No data to export.');
+                return;
+            }
+
+            // Get all question keys from the first item that has responses
+            const firstWithResponses = dataToExport.find(item => item.responses);
+            const questionKeys = firstWithResponses ? Object.keys(firstWithResponses.responses) : [];
+
+            // If no responses found, try to get question keys from any item
+            if (questionKeys.length === 0) {
+                for (let i = 1; i <= 20; i++) {
+                    questionKeys.push(`q${i}`);
+                }
+            }
+
+            let headers = 'Patient Name,Age,Gender,Exam Date,Evaluation Time,Total Score,Timestamp,Document ID';
+            questionKeys.forEach(q => headers += `,${q}`);
+            let csv = headers + '\n';
+            
+            dataToExport.forEach(item => {
+                const timestamp = item.timestamp?.toDate().toISOString() || '';
+                let row = `"${item.patientName || ''}","${item.age || ''}","${item.gender || ''}","${item.examDate || ''}","${item.evalTime || ''}","${item.totalScore || 0}","${timestamp}","${item.id}"`;
+                
+                // Add all question responses
+                questionKeys.forEach(q => {
+                    const responseValue = item.responses?.[q] || item[q] || 0;
+                    row += `,"${responseValue}"`;
+                });
+                
+                csv += row + '\n';
+            });
+
+            downloadCSV(csv, `jfls20_detailed_export_${new Date().toISOString().split('T')[0]}.csv`);
+        }
+
+        function exportLongitudinalCSV() {
+            const dataToExport = filteredData.length > 0 ? filteredData : allData;
+            
+            if (dataToExport.length === 0) {
+                alert('No data to export.');
+                return;
+            }
+
+            // Group by patient for longitudinal analysis
+            const patientGroups = {};
+            dataToExport.forEach(item => {
+                const patientKey = item.patientName?.toLowerCase().trim() || 'unknown';
+                if (!patientGroups[patientKey]) {
+                    patientGroups[patientKey] = [];
+                }
+                patientGroups[patientKey].push(item);
+            });
+
+            let csv = 'Patient Name,Age,Gender,Evaluation Time,Exam Date,Total Score,Timestamp,Session Order\n';
+            
+            Object.values(patientGroups).forEach(patientEntries => {
+                // Sort patient entries by date (oldest first for longitudinal)
+                patientEntries.sort((a, b) => new Date(a.timestamp?.toDate()) - new Date(b.timestamp?.toDate()));
+                
+                let sessionNumber = 1;
+                patientEntries.forEach(item => {
+                    const timestamp = item.timestamp?.toDate().toISOString() || '';
+                    csv += `"${item.patientName || ''}","${item.age || ''}","${item.gender || ''}","${item.evalTime || ''}","${item.examDate || ''}","${item.totalScore || 0}","${timestamp}","Session ${sessionNumber}"\n`;
+                    sessionNumber++;
+                });
+                
+                // Add empty line between patients
+                csv += ',,,,,,,\n';
+            });
+
+            downloadCSV(csv, `jfls20_longitudinal_export_${new Date().toISOString().split('T')[0]}.csv`);
+        }
+
+        function downloadCSV(csv, filename) {
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', filename);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            const recordCount = filteredData.length > 0 ? filteredData.length : allData.length;
+            alert(`✅ Exported ${recordCount} records to ${filename}`);
+         }
+    </script>
+</body>
+</html>
