@@ -1,4 +1,4 @@
-// script.js - FIREBASE VERSION
+// script.js - FIREBASE VERSION WITH DOMAIN SCORES
 // JFLS-20 dynamic form renderer with Firebase integration
 
 // ===== FIREBASE CONFIGURATION =====
@@ -42,6 +42,13 @@ const domains = {
     ["Expressing emotions like anger or joy", "ગુસ્સો કે આનંદ જેવી ભાવનાઓ દર્શાવવામાં કેટલી મુશ્કેલી થાય છે?", "गुस्सा या खुशी जैसी भावनाएँ व्यक्त करने (चेहरे पर) में कितनी कठिनाई होती है?"],
     ["Facial movement while talking", "વાત કરતી વખતે ચહેરાના હલનચલનમાં કેટલી મુશ્કેલી હોય છે?", "बात करते समय चेहरे की हरकतों में कितनी कठिनाई होती है?"]
   ]
+};
+
+// Domain question counts for score calculation
+const domainQuestionCounts = {
+  "Mastication": 10,
+  "Jaw Mobility": 5,
+  "Verbal/Emotional Expression": 5
 };
 
 // ===== APPLICATION STATE =====
@@ -178,7 +185,7 @@ function calculateScores() {
   const form = document.forms["jflsForm"];
   if (!form) {
     showCustomMessageBox('Form not found.');
-    return;
+    return null;
   }
 
   const values = [];
@@ -187,10 +194,20 @@ function calculateScores() {
     if (!el) {
       console.error(`Slider not found: q${i}`);
       showCustomMessageBox('An internal error occurred while reading responses.');
-      return;
+      return null;
     }
     const v = parseInt(el.value, 10);
     values.push(isNaN(v) ? 0 : v);
+  }
+
+  // Calculate domain scores
+  let currentIndex = 0;
+  const domainScores = {};
+  
+  for (const [domain, questions] of Object.entries(domains)) {
+    const domainValues = values.slice(currentIndex, currentIndex + questions.length);
+    domainScores[domain] = domainValues.reduce((s, x) => s + x, 0);
+    currentIndex += questions.length;
   }
 
   const totalScore = values.reduce((s, x) => s + x, 0);
@@ -199,14 +216,38 @@ function calculateScores() {
   const resultsEl = document.getElementById("results");
   if (resultsEl) {
     resultsEl.innerHTML = `
-      <strong class="block text-blue-700">Total JFLS-20 Score:</strong>
-      <span class="text-4xl font-bold">${totalScore}</span> / ${maxScore}
+      <div class="space-y-4">
+        <div class="text-center">
+          <strong class="block text-blue-700 text-lg">Total JFLS-20 Score:</strong>
+          <span class="text-4xl font-bold">${totalScore}</span> / ${maxScore}
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+          <div class="bg-blue-50 p-4 rounded-lg text-center">
+            <strong class="block text-blue-800">Mastication</strong>
+            <span class="text-2xl font-bold text-blue-600">${domainScores["Mastication"]}</span> / 100
+          </div>
+          <div class="bg-green-50 p-4 rounded-lg text-center">
+            <strong class="block text-green-800">Jaw Mobility</strong>
+            <span class="text-2xl font-bold text-green-600">${domainScores["Jaw Mobility"]}</span> / 50
+          </div>
+          <div class="bg-purple-50 p-4 rounded-lg text-center">
+            <strong class="block text-purple-800">Verbal/Emotional</strong>
+            <span class="text-2xl font-bold text-purple-600">${domainScores["Verbal/Emotional Expression"]}</span> / 50
+          </div>
+        </div>
+      </div>
     `;
     resultsEl.scrollIntoView({ behavior: 'smooth' });
   } else {
     showCustomMessageBox(`Total Score: ${totalScore} / ${maxScore}`);
   }
-  return totalScore;
+  
+  return {
+    totalScore,
+    domainScores,
+    values
+  };
 }
 
 // ===== FIREBASE DATA SAVING =====
@@ -219,6 +260,10 @@ async function saveToFirebase() {
   }
 
   try {
+    // Calculate scores first
+    const scoreResult = calculateScores();
+    if (!scoreResult) return;
+
     // 1. Collect all form data
     const formData = {
       // Patient Information
@@ -229,9 +274,10 @@ async function saveToFirebase() {
       evalTime: form.elements['evalTime']?.value || '',
       otherEvalTime: form.elements['otherEvalTime']?.value || '',
       
-      // Assessment data
+      // Assessment data - NOW WITH DOMAIN SCORES
       responses: {},
-      totalScore: calculateScores(),
+      totalScore: scoreResult.totalScore,
+      domainScores: scoreResult.domainScores, // NEW: Individual domain scores
       
       // Metadata
       timestamp: firebase.firestore.FieldValue.serverTimestamp(),
@@ -346,13 +392,23 @@ function downloadPdf() {
     y += 4;
   }
 
-  const resultsEl = document.getElementById("results");
-  if (resultsEl && resultsEl.innerText.trim()) {
-    const totalText = resultsEl.innerText.replace(/\n/g, ' ');
+  // Add domain scores to PDF
+  const scoreResult = calculateScores();
+  if (scoreResult) {
+    y += 6;
     doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
-    const finalY = Math.min(pageHeight - 20, Math.max(y + 6, pageHeight - 30));
-    doc.text(totalText, pageWidth / 2, finalY, null, null, 'center');
+    doc.text("Domain Scores Summary:", 14, y);
+    y += 6;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Total JFLS-20 Score: ${scoreResult.totalScore} / 200`, 16, y);
+    y += 5;
+    doc.text(`Mastication: ${scoreResult.domainScores["Mastication"]} / 100`, 16, y);
+    y += 5;
+    doc.text(`Jaw Mobility: ${scoreResult.domainScores["Jaw Mobility"]} / 50`, 16, y);
+    y += 5;
+    doc.text(`Verbal/Emotional Expression: ${scoreResult.domainScores["Verbal/Emotional Expression"]} / 50`, 16, y);
   }
 
   doc.setFontSize(8);
@@ -399,7 +455,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const calcBtn = document.getElementById('calculateBtn');
   if (calcBtn) calcBtn.addEventListener('click', calculateScores);
   
-  // UPDATED: Now points to Firebase function
   const saveBtn = document.getElementById('saveDataBtn');
   if (saveBtn) saveBtn.addEventListener('click', saveToFirebase); 
   
